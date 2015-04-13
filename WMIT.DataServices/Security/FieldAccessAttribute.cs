@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace WMIT.DataServices.Security
 {
-    public class FieldAccessAttribute
+    public class FieldAccessAttribute : Attribute
     {
+        public bool IsSystemField { get; set; }
     }
 }

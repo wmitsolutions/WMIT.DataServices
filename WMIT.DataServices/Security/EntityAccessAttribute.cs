@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WMIT.DataServices.Security
 {
-    public class EntityAccessAttribute
+    public class EntityAccessAttribute : Attribute
     {
     }
 }

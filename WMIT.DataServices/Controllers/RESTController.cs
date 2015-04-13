@@ -102,10 +102,7 @@ namespace WMIT.DataServices.REST
                 return NotFound();
             }
 
-            db.Entry(entity).State = EntityState.Modified;
-
-            //db.Entry(entity).Update
-            //db.Entry(entity).Update().SetModificationStatistics(); // TODO: implement
+            db.Entry(entity).Update().SetModificationStatistics(User.Identity); // TODO: implement
 
             TEntity updatedEntity = null;
             ExceptionDispatchInfo capturedException = null;
@@ -143,7 +140,8 @@ namespace WMIT.DataServices.REST
                 return BadRequest(ModelState);
             }
 
-            //entity.SetCreationStatistics(); // TODO: implement
+            entity.SetCreationStatistics(User.Identity);
+
             db.Set<TEntity>().Add(entity);
             int result = await db.SaveChangesAsync();
 

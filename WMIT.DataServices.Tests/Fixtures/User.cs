@@ -14,7 +14,7 @@ namespace WMIT.DataServices.Tests.Fixtures
         private Identity _Identity;
         public IIdentity Identity
         {
-            get { throw new NotImplementedException(); }
+            get { return _Identity; }
         }
 
         public bool IsInRole(string role)
