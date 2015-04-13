@@ -31,8 +31,7 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Tests - GetAll
 
         [TestMethod]
-        [TestCategory("RESTController")]
-        public async Task CanGetAllDataEntries()
+        public async Task GetAll_CanGetAllDataEntries()
         {
             var result = await ctrl.GetAll();
             Assert.AreEqual(4, result.Count);
@@ -43,8 +42,7 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Tests - GetById
 
         [TestMethod]
-        [TestCategory("RESTController")]
-        public async Task CanFindSingleEntityById()
+        public async Task GetById_CanFindSingleEntityById()
         {
             var result = await ctrl.GetEntity(1);
             Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<Contact>));
@@ -60,15 +58,13 @@ namespace WMIT.DataServices.Tests.Controllers
         }
 
         [TestMethod]
-        [TestCategory("RESTController")]
-        public async Task CanReturnNotFound()
+        public async Task GetById_CanReturnNotFound()
         {
             var result = await ctrl.GetEntity(999); // No contact 999 in data source
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
-        [TestCategory("RESTController")]
         public async Task CanReturnNotFoundForDeletedEntries()
         {
             var result = await ctrl.GetEntity(5); // Contact 5 is deleted (IsDeleted = true)
@@ -80,8 +76,7 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Tests - Deletion
 
         [TestMethod]
-        [TestCategory("RESTController")]
-        public async Task CanDeleteEntry()
+        public async Task Delete_CanDeleteEntry()
         {
             var deletionResult = await ctrl.DeleteEntity(1);
             Assert.IsInstanceOfType(deletionResult, typeof(OkNegotiatedContentResult<Contact>));
@@ -99,6 +94,41 @@ namespace WMIT.DataServices.Tests.Controllers
         #endregion
 
         #region Tests - Insert
+
+        [TestMethod]
+        public async Task Insert_CanInsertEntry()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "Chuck",
+                LastName ="Berry"
+            };
+
+            var result = await ctrl.PostEntity(contact);
+            Assert.IsInstanceOfType(result, typeof(CreatedAtRouteNegotiatedContentResult<Contact>));
+
+            var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)result).Content;
+            Assert.AreEqual(6, resultContact.Id);
+        }
+
+        [TestMethod]
+        public async Task Insert_CreationStats()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "Chuck",
+                LastName = "Berry"
+            };
+
+            ctrl.User = new User("user");
+
+            var time = DateTime.Now;
+            var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)await ctrl.PostEntity(contact)).Content;
+            
+            // TODO: Implement tests
+            Assert.AreEqual("user", resultContact.CreatedBy);
+            Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
+        }
 
         #endregion
 

@@ -96,6 +96,7 @@
     <Compile Include="Controllers\RESTController.Test.cs" />
     <Compile Include="Fixtures\ContactsController.cs" />
     <Compile Include="Fixtures\TestDB.cs" />
+    <Compile Include="Fixtures\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

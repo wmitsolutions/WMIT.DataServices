@@ -14,7 +14,6 @@ namespace WMIT.DataServices.Tests.Common
     public class TypeHelperTests
     {
         [TestMethod]
-        [TestCategory("TypeHelper")]
         public void CanGetInterfaceFromTypeByType()
         {
             MyTestClass testObject = new MyTestClass();
@@ -25,7 +24,6 @@ namespace WMIT.DataServices.Tests.Common
         }
 
         [TestMethod]
-        [TestCategory("TypeHelper")]
         public void CanTestIfInterfaceIsImplementedByType()
         {
             MyTestClass testObject = new MyTestClass();
