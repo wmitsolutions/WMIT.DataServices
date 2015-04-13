@@ -23,6 +23,10 @@ namespace WMIT.DataServices.Tests
     {
         public DbSet<Contact> Contacts { get; set; }
 
+        public TestDB()
+        {
+        }
+
         public TestDB(DbConnection connection) : base(connection, true)
         { 
         }
@@ -32,9 +36,7 @@ namespace WMIT.DataServices.Tests
         {
             if (cachingDataLoader == null)
             {
-                // TODO: implement fixture data
-                var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..\\..\\Data"); 
-                var csvDataLoader = new CsvDataLoader(path);
+                var csvDataLoader = new CsvDataLoader("res://WMIT.DataServices.Tests/Fixtures/Data/");
                 cachingDataLoader = new CachingDataLoader(csvDataLoader);
             }
 

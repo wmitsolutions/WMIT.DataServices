@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using WMIT.DataServices.Common;
 using WMIT.DataServices.Model;
 
 namespace WMIT.DataServices.REST
@@ -16,12 +17,33 @@ namespace WMIT.DataServices.REST
         where TDbContext : DbContext, new()
         where TEntity : class, IEntity
     {
+        #region Internal
+
+        protected virtual IQueryable<TEntity> Entities
+        {
+            get
+            {
+                return set.Where(e => !e.IsDeleted);
+            }
+        }
+
         protected TDbContext db;
         protected DbSet<TEntity> set;
+
+        public RESTController(TDbContext dbContext)
+        {
+            db = dbContext;
+            Initialize();
+        }
 
         public RESTController()
         {
             db = new TDbContext();
+            Initialize();
+        }
+
+        protected virtual void Initialize()
+        {
             set = db.Set<TEntity>();
 
             // Change Detection is not used in our web services,
@@ -31,26 +53,39 @@ namespace WMIT.DataServices.REST
             db.Configuration.AutoDetectChangesEnabled = false;
         }
 
-        // GET: api/entities
-        public IQueryable<TEntity> GetAll()
+        protected virtual async Task<bool> EntityExists(int id)
         {
-            return db.Set<TEntity>().Where(e => !e.IsDeleted);
+            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            return entity != null;
+        }
+
+        #endregion
+
+        #region API
+
+        // GET: api/entities
+        public virtual async Task<List<TEntity>> GetAll()
+        {
+            return await Entities.ToListAsync();
         }
 
         // GET: api/entities/5
-        public async Task<IHttpActionResult> GetEntity(int id)
+        public virtual async Task<IHttpActionResult> GetEntity(int id)
         {
-            TEntity entity = await db.Set<TEntity>().FindAsync(id);
-            if (entity == null)
+            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+
+            if (entity != null)
+            {
+                return Ok(entity);
+            }
+            else
             {
                 return NotFound();
             }
-
-            return Ok(entity);
         }
 
         // PUT: api/Contacts/5
-        public async Task<IHttpActionResult> PutEntity(int id, TEntity entity)
+        public virtual async Task<IHttpActionResult> PutEntity(int id, TEntity entity)
         {
             if (!ModelState.IsValid)
             {
@@ -60,6 +95,11 @@ namespace WMIT.DataServices.REST
             if (id != entity.Id)
             {
                 return BadRequest();
+            }
+
+            if (!await EntityExists(id))
+            {
+                return NotFound();
             }
 
             db.Entry(entity).State = EntityState.Modified;
@@ -96,7 +136,7 @@ namespace WMIT.DataServices.REST
         }
 
         // POST: api/entities
-        public async Task<IHttpActionResult> PostEntity(TEntity entity)
+        public virtual async Task<IHttpActionResult> PostEntity(TEntity entity)
         {
             if (!ModelState.IsValid)
             {
@@ -105,15 +145,20 @@ namespace WMIT.DataServices.REST
 
             //entity.SetCreationStatistics(); // TODO: implement
             db.Set<TEntity>().Add(entity);
-            await db.SaveChangesAsync();
+            int result = await db.SaveChangesAsync();
 
-            //var createdEntity = await db.Set<TEntity>().FindAsync(entity.Id);
-
-            return CreatedAtRoute("DefaultApi", new { id = entity.Id }, entity);
+            if (result == 1)
+            {
+                return CreatedAtRoute("DefaultApi", new { id = entity.Id }, entity);
+            }
+            else
+            {
+                throw new NoRowsAffectedException();
+            }
         }
 
         // DELETE: api/entities/5
-        public async Task<IHttpActionResult> DeleteEntity(object id)
+        public virtual async Task<IHttpActionResult> DeleteEntity(int id)
         {
             TEntity entity = await db.Set<TEntity>().FindAsync(id);
             if (entity == null)
@@ -122,16 +167,21 @@ namespace WMIT.DataServices.REST
             }
 
             entity.IsDeleted = true;
-            await db.SaveChangesAsync();
+            db.Entry(entity).State = EntityState.Modified;
 
-            return Ok(entity);
+            int result = await db.SaveChangesAsync();
+
+            if (result == 1)
+            {
+                return Ok(entity);
+            }
+            else
+            {
+                throw new NoRowsAffectedException();
+            }
         }
 
-        private async Task<bool> EntityExists(params object[] keyValues)
-        {
-            TEntity entity = await db.Set<TEntity>().FindAsync(keyValues);
-            return entity != null;
-        }
+        #endregion
 
         #region IDisposable implementation
         protected override void Dispose(bool disposing)
