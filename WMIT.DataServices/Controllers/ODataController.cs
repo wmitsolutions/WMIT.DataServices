@@ -76,11 +76,11 @@ namespace WMIT.DataServices.Controllers
 
         // GET: api/Contacts(5)
         [EnableQuery]
-        public virtual async Task<IHttpActionResult> GetEntity([FromODataUri]int id, ODataQueryOptions<TEntity> options)
+        public virtual async Task<IHttpActionResult> GetEntity([FromODataUri]int key, ODataQueryOptions<TEntity> options)
         {
             var queryable = Entities.ApplyQuery(options);
 
-            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
 
             if (entity != null)
             {
@@ -94,19 +94,19 @@ namespace WMIT.DataServices.Controllers
 
         // PUT: api/Contacts(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> PutEntity([FromODataUri]int id, TEntity entity, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> PutEntity([FromODataUri]int key, TEntity entity, ODataQueryOptions<TEntity> options)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != entity.Id)
+            if (key != entity.Id)
             {
                 return BadRequest();
             }
 
-            if (!await EntityExists(id))
+            if (!await EntityExists(key))
             {
                 return NotFound();
             }
@@ -121,7 +121,7 @@ namespace WMIT.DataServices.Controllers
                 await db.SaveChangesAsync();
 
                 var queryable = Entities.ApplyQuery(options);
-                updatedEntity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
+                updatedEntity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -130,7 +130,7 @@ namespace WMIT.DataServices.Controllers
 
             if (capturedException != null)
             {
-                if (!await EntityExists(id))
+                if (!await EntityExists(key))
                 {
                     return NotFound();
                 }
@@ -165,11 +165,11 @@ namespace WMIT.DataServices.Controllers
 
         // DELETE: api/entities(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> DeleteEntity([FromODataUri]int id, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> DeleteEntity([FromODataUri]int key, ODataQueryOptions<TEntity> options)
         {
             var queryable = Entities.ApplyQuery(options);
 
-            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
             if (entity == null)
             {
                 return NotFound();
