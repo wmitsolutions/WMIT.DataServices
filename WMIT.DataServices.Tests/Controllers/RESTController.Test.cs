@@ -125,7 +125,6 @@ namespace WMIT.DataServices.Tests.Controllers
             var time = DateTime.Now;
             var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)await ctrl.PostEntity(contact)).Content;
             
-            // TODO: Implement tests
             Assert.AreEqual("user", resultContact.CreatedBy);
             Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
         }
@@ -133,6 +132,37 @@ namespace WMIT.DataServices.Tests.Controllers
         #endregion
 
         #region Tests - Update
+
+        [TestMethod]
+        public async Task Update_CanUpdateEntry()
+        {
+            var contact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            contact.FirstName = "Changeme";
+
+            var result = await ctrl.PutEntity(contact.Id, contact);
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<Contact>));
+
+            var resultContact = ((OkNegotiatedContentResult<Contact>)result).Content;
+            Assert.AreEqual("Changeme", resultContact.FirstName);
+
+            var updatedContact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            Assert.AreEqual("Changeme", updatedContact.FirstName);
+        }
+
+        [TestMethod]
+        public async Task Update_ModificationStats()
+        {
+            var contact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            contact.FirstName = "Changeme";
+
+            ctrl.User = new User("user");
+
+            var time = DateTime.Now;
+            var resultContact = ((OkNegotiatedContentResult<Contact>)await ctrl.PutEntity(contact.Id, contact)).Content;
+
+            Assert.AreEqual("user", resultContact.ModifiedBy);
+            Assert.IsTrue((resultContact.ModifiedAt - time) < TimeSpan.FromMinutes(5));
+        }
 
         #endregion
     }
