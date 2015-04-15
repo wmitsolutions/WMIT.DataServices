@@ -34,7 +34,11 @@ namespace WMIT.DataServices.Tests.Controllers
         public async Task GetAll_CanGetAllDataEntries()
         {
             var result = await ctrl.GetAll();
-            Assert.AreEqual(4, result.Count);
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<List<Contact>>));
+
+            var entries = ((OkNegotiatedContentResult<List<Contact>>)result).Content;
+
+            Assert.AreEqual(4, entries.Count);
         }
 
         #endregion
@@ -84,7 +88,7 @@ namespace WMIT.DataServices.Tests.Controllers
             var deletionResultContact = ((OkNegotiatedContentResult<Contact>)deletionResult).Content;
             Assert.AreEqual(true, deletionResultContact.IsDeleted);
 
-            var contacts = await ctrl.GetAll();
+            var contacts = ((OkNegotiatedContentResult<List<Contact>>)await ctrl.GetAll()).Content;
             Assert.AreEqual(3, contacts.Count);
 
             var deletedContact = await ctrl.GetEntity(1);

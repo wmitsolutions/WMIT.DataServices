@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Description;
-using WMIT.DataServices.Common;
+using System.Web.OData;
+using System.Web.OData.Query;
 using WMIT.DataServices.Model;
+using WMIT.DataServices.Common;
+using System.Runtime.ExceptionServices;
+using System.Data.Entity.Infrastructure;
 
-namespace WMIT.DataServices.REST
+namespace WMIT.DataServices.Controllers
 {
-    public class RESTController<TDbContext, TEntity> : ApiController
+    public class ODataController<TDbContext, TEntity> : ODataController
         where TDbContext : DbContext, new()
         where TEntity : class, IEntity
     {
@@ -27,16 +28,16 @@ namespace WMIT.DataServices.REST
             }
         }
 
-        protected TDbContext db;
-        protected DbSet<TEntity> set;
+        protected TDbContext db = null;
+        protected DbSet<TEntity> set = null;
 
-        public RESTController(TDbContext dbContext)
+        public ODataController(TDbContext dbContext)
         {
             db = dbContext;
             Initialize();
         }
 
-        public RESTController()
+        public ODataController()
         {
             db = new TDbContext();
             Initialize();
@@ -64,16 +65,22 @@ namespace WMIT.DataServices.REST
         #region API
 
         // GET: api/entities
-        public virtual async Task<IHttpActionResult> GetAll()
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        public virtual async Task<IHttpActionResult> GetAll(ODataQueryOptions<TEntity> options)
         {
-            var entities = await Entities.ToListAsync();
+            var queryable = Entities.ApplyQuery(options);
+
+            var entities = await queryable.ToListAsync();
             return Ok(entities);
         }
 
-        // GET: api/entities/5
-        public virtual async Task<IHttpActionResult> GetEntity(int id)
+        // GET: api/Contacts(5)
+        [EnableQuery]
+        public virtual async Task<IHttpActionResult> GetEntity([FromODataUri]int id, ODataQueryOptions<TEntity> options)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            var queryable = Entities.ApplyQuery(options);
+
+            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
 
             if (entity != null)
             {
@@ -85,8 +92,9 @@ namespace WMIT.DataServices.REST
             }
         }
 
-        // PUT: api/Contacts/5
-        public virtual async Task<IHttpActionResult> PutEntity(int id, TEntity entity)
+        // PUT: api/Contacts(5)
+        [EnableQuery]
+        public async Task<IHttpActionResult> PutEntity([FromODataUri]int id, TEntity entity, ODataQueryOptions<TEntity> options)
         {
             if (!ModelState.IsValid)
             {
@@ -111,7 +119,9 @@ namespace WMIT.DataServices.REST
             try
             {
                 await db.SaveChangesAsync();
-                updatedEntity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+
+                var queryable = Entities.ApplyQuery(options);
+                updatedEntity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -130,11 +140,12 @@ namespace WMIT.DataServices.REST
                 }
             }
 
-            return Ok(updatedEntity);
+            return Updated(updatedEntity);
         }
 
         // POST: api/entities
-        public virtual async Task<IHttpActionResult> PostEntity(TEntity entity)
+        [EnableQuery]
+        public async Task<IHttpActionResult> PostEntity(TEntity entity, ODataQueryOptions<TEntity> options)
         {
             if (!ModelState.IsValid)
             {
@@ -146,13 +157,19 @@ namespace WMIT.DataServices.REST
             db.Set<TEntity>().Add(entity);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = entity.Id }, entity);
+            var queryable = Entities.ApplyQuery(options);
+            TEntity createdEntity = await queryable.SingleOrDefaultAsync(e => e.Id == entity.Id);
+
+            return Created(createdEntity);
         }
 
-        // DELETE: api/entities/5
-        public virtual async Task<IHttpActionResult> DeleteEntity(int id)
+        // DELETE: api/entities(5)
+        [EnableQuery]
+        public async Task<IHttpActionResult> DeleteEntity([FromODataUri]int id, ODataQueryOptions<TEntity> options)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            var queryable = Entities.ApplyQuery(options);
+
+            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == id);
             if (entity == null)
             {
                 return NotFound();
