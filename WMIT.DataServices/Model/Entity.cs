@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WMIT.DataServices.Security;
 
 namespace WMIT.DataServices.Model
 {
@@ -10,14 +11,21 @@ namespace WMIT.DataServices.Model
     {
         public int Id { get; set; }
 
+        [FieldAccess(IsSystemField=true)]
         public bool IsDeleted { get; set; }
 
+        [FieldAccess(IsSystemField = true)]
         public string CreatedBy { get; set; }
+
+        [FieldAccess(IsSystemField = true)]
         public DateTime CreatedAt { get; set; }
+
+        [FieldAccess(IsSystemField = true)]
         public string ModifiedBy { get; set; }
+
+        [FieldAccess(IsSystemField = true)]
         public DateTime? ModifiedAt { get; set; }
     }
-
 
     public interface IEntity
     {

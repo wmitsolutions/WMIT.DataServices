@@ -56,7 +56,7 @@ namespace WMIT.DataServices.Controllers
 
         protected virtual async Task<bool> EntityExists(int id)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
             return entity != null;
         }
 
@@ -66,7 +66,7 @@ namespace WMIT.DataServices.Controllers
 
         // GET: api/entities
         [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
-        public virtual async Task<IHttpActionResult> GetAll(ODataQueryOptions<TEntity> options)
+        public virtual async Task<IHttpActionResult> Get(ODataQueryOptions<TEntity> options)
         {
             var queryable = Entities.ApplyQuery(options);
 
@@ -76,7 +76,7 @@ namespace WMIT.DataServices.Controllers
 
         // GET: api/Contacts(5)
         [EnableQuery]
-        public virtual async Task<IHttpActionResult> GetEntity([FromODataUri]int key, ODataQueryOptions<TEntity> options)
+        public virtual async Task<IHttpActionResult> Get([FromODataUri]int key, ODataQueryOptions<TEntity> options)
         {
             var queryable = Entities.ApplyQuery(options);
 
@@ -94,7 +94,7 @@ namespace WMIT.DataServices.Controllers
 
         // PUT: api/Contacts(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> PutEntity([FromODataUri]int key, TEntity entity, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity, ODataQueryOptions<TEntity> options)
         {
             if (!ModelState.IsValid)
             {
@@ -119,6 +119,9 @@ namespace WMIT.DataServices.Controllers
             try
             {
                 await db.SaveChangesAsync();
+
+                // Detach entity to ensure it will be refetched in later querying
+                db.Entry(entity).State = EntityState.Detached;
 
                 var queryable = Entities.ApplyQuery(options);
                 updatedEntity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
@@ -145,7 +148,7 @@ namespace WMIT.DataServices.Controllers
 
         // POST: api/entities
         [EnableQuery]
-        public async Task<IHttpActionResult> PostEntity(TEntity entity, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> Post(TEntity entity, ODataQueryOptions<TEntity> options)
         {
             if (!ModelState.IsValid)
             {
@@ -165,7 +168,7 @@ namespace WMIT.DataServices.Controllers
 
         // DELETE: api/entities(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> DeleteEntity([FromODataUri]int key, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> Delete([FromODataUri]int key, ODataQueryOptions<TEntity> options)
         {
             var queryable = Entities.ApplyQuery(options);
 

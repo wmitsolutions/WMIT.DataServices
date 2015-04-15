@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.OData.Builder;
+using WMIT.DataServices.Demo.Models;
+using System.Web.OData.Extensions;
 
 namespace WMIT.DataServices.Demo
 {
@@ -19,6 +22,21 @@ namespace WMIT.DataServices.Demo
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            // OData
+            ODataModelBuilder builder = new ODataConventionModelBuilder();
+            builder.EntitySet<Contact>("Contacts");
+
+            //builder.EntityType<Entity>().Ignore(e => e.CreatedAt);
+            //builder.EntityType<Entity>().Ignore(e => e.CreatedBy);
+            //builder.EntityType<Entity>().Ignore(e => e.ModifiedAt);
+            //builder.EntityType<Entity>().Ignore(e => e.ModifiedBy);
+            //builder.EntityType<Entity>().Ignore(e => e.IsDeleted);
+
+            config.MapODataServiceRoute(
+                routeName: "odata",
+                routePrefix: "odata",
+                model: builder.GetEdmModel());
         }
     }
 }

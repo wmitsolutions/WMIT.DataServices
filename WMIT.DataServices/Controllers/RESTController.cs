@@ -55,7 +55,7 @@ namespace WMIT.DataServices.REST
 
         protected virtual async Task<bool> EntityExists(int id)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
             return entity != null;
         }
 
@@ -111,6 +111,10 @@ namespace WMIT.DataServices.REST
             try
             {
                 await db.SaveChangesAsync();
+
+                // Detach entity to ensure it will be refetched in later querying
+                db.Entry(entity).State = EntityState.Detached;
+
                 updatedEntity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
             }
             catch (DbUpdateConcurrencyException ex)
