@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>    <licenseUrl>https://raw.githubusercontent.com/wmitsolutions/WMIT.DataServices/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/wmitsolutions/WMIT.DataServices</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright 2015 WMIT Solutions GmbH</copyright>
+    <tags>restful services odata</tags>
+  </metadata>
+</package>
