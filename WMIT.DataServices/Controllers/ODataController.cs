@@ -65,45 +65,27 @@ namespace WMIT.DataServices.Controllers
         #region API
 
         // GET: api/entities
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
-        public virtual async Task<IHttpActionResult> Get(ODataQueryOptions<TEntity> options)
+        [EnableQuery()]
+        public virtual IHttpActionResult Get()
         {
-            var queryable = Entities.ApplyQuery(options);
-
-            var entities = await queryable.ToListAsync();
-            return Ok(entities);
+            return Ok(Entities);
         }
 
         // GET: api/Contacts(5)
         [EnableQuery]
-        public virtual async Task<IHttpActionResult> Get([FromODataUri]int key, ODataQueryOptions<TEntity> options)
+        public virtual IHttpActionResult Get([FromODataUri]int key)
         {
-            var queryable = Entities.ApplyQuery(options);
-
-            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
-
-            if (entity != null)
-            {
-                return Ok(entity);
-            }
-            else
-            {
-                return NotFound();
-            }
+            var queryable = Entities.Where(e => e.Id == key);
+            return Ok(SingleResult.Create(queryable));
         }
 
         // PUT: api/Contacts(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || key != entity.Id)
             {
                 return BadRequest(ModelState);
-            }
-
-            if (key != entity.Id)
-            {
-                return BadRequest();
             }
 
             if (!await EntityExists(key))
@@ -113,9 +95,7 @@ namespace WMIT.DataServices.Controllers
 
             db.Entry(entity).Update().SetModificationStatistics(User.Identity);
 
-            TEntity updatedEntity = null;
             ExceptionDispatchInfo capturedException = null;
-
             try
             {
                 await db.SaveChangesAsync();
@@ -123,8 +103,8 @@ namespace WMIT.DataServices.Controllers
                 // Detach entity to ensure it will be refetched in later querying
                 db.Entry(entity).State = EntityState.Detached;
 
-                var queryable = Entities.ApplyQuery(options);
-                updatedEntity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
+                var queryable = Entities.Where(e => e.Id == entity.Id);
+                return Updated(SingleResult.Create(queryable));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -143,12 +123,12 @@ namespace WMIT.DataServices.Controllers
                 }
             }
 
-            return Updated(updatedEntity);
+            return StatusCode(System.Net.HttpStatusCode.NoContent);
         }
 
         // POST: api/entities
         [EnableQuery]
-        public async Task<IHttpActionResult> Post(TEntity entity, ODataQueryOptions<TEntity> options)
+        public async Task<IHttpActionResult> Post(TEntity entity)
         {
             if (!ModelState.IsValid)
             {
@@ -160,30 +140,28 @@ namespace WMIT.DataServices.Controllers
             db.Set<TEntity>().Add(entity);
             await db.SaveChangesAsync();
 
-            var queryable = Entities.ApplyQuery(options);
-            TEntity createdEntity = await queryable.SingleOrDefaultAsync(e => e.Id == entity.Id);
-
-            return Created(createdEntity);
+            var queryable = Entities.Where(e => e.Id == entity.Id);
+            return Created(SingleResult.Create(queryable));
         }
 
-        // DELETE: api/entities(5)
-        [EnableQuery]
-        public async Task<IHttpActionResult> Delete([FromODataUri]int key, ODataQueryOptions<TEntity> options)
-        {
-            var queryable = Entities.ApplyQuery(options);
+        //// DELETE: api/entities(5)
+        //[EnableQuery]
+        //public async Task<IHttpActionResult> Delete([FromODataUri]int key, ODataQueryOptions<TEntity> options)
+        //{
+        //    var queryable = Entities.ApplyQuery(options);
 
-            TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
-            if (entity == null)
-            {
-                return NotFound();
-            }
+        //    TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
+        //    if (entity == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            entity.IsDeleted = true;
-            db.Entry(entity).State = EntityState.Modified;
+        //    entity.IsDeleted = true;
+        //    db.Entry(entity).State = EntityState.Modified;
 
-            await db.SaveChangesAsync();
-            return Ok(entity);
-        }
+        //    await db.SaveChangesAsync();
+        //    return Ok(entity);
+        //}
 
         #endregion
 

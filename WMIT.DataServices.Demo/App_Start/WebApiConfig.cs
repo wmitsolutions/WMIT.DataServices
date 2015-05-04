@@ -24,7 +24,7 @@ namespace WMIT.DataServices.Demo
             );
 
             // OData
-            ODataModelBuilder builder = new ODataConventionModelBuilder();
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<Contact>("Contacts");
 
             //builder.EntityType<Entity>().Ignore(e => e.CreatedAt);
