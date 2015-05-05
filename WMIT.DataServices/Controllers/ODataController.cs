@@ -80,11 +80,34 @@ namespace WMIT.DataServices.Controllers
             return Ok(SingleResult.Create(queryable));
         }
 
+        // POST: api/entities
+        [EnableQuery]
+        public async Task<IHttpActionResult> Post(TEntity entity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
+            // We should implement an Authorize handler for this behavior which makes use of 
+            // SystemFields/FieldAccess
+            entity.SetCreationStatistics(User.Identity);
+
+            db.Set<TEntity>().Add(entity);
+            await db.SaveChangesAsync();
+
+            entity = await Entities.Where(e => e.Id == entity.Id).SingleAsync();
+            return Created(entity);
+        }
+
         // PUT: api/Contacts(5)
         [EnableQuery]
         public async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity)
         {
-            if (!ModelState.IsValid || key != entity.Id)
+            Validate<TEntity>(entity);
+
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -95,17 +118,11 @@ namespace WMIT.DataServices.Controllers
             }
 
             db.Entry(entity).Update().SetModificationStatistics(User.Identity);
-
+            
             ExceptionDispatchInfo capturedException = null;
             try
             {
                 await db.SaveChangesAsync();
-
-                // Detach entity to ensure it will be refetched in later querying
-                db.Entry(entity).State = EntityState.Detached;
-
-                var queryable = Entities.Where(e => e.Id == entity.Id);
-                return Updated(SingleResult.Create(queryable));
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -124,25 +141,11 @@ namespace WMIT.DataServices.Controllers
                 }
             }
 
-            return StatusCode(System.Net.HttpStatusCode.NoContent);
-        }
-
-        // POST: api/entities
-        [EnableQuery]
-        public async Task<IHttpActionResult> Post(TEntity entity)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            entity.SetCreationStatistics(User.Identity);
-
-            db.Set<TEntity>().Add(entity);
-            await db.SaveChangesAsync();
+            // Detach entity to ensure it will be refetched in later querying
+            db.Entry(entity).State = EntityState.Detached;
 
             var queryable = Entities.Where(e => e.Id == entity.Id);
-            return Created(SingleResult.Create(queryable));
+            return Updated(SingleResult.Create(queryable));
         }
 
         // DELETE: api/entities(5)

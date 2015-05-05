@@ -9,5 +9,6 @@ namespace WMIT.DataServices.Demo.Models
     public class AddressBookDB : DbContext
     {
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Address> Addresses { get; set; }
     }
 }

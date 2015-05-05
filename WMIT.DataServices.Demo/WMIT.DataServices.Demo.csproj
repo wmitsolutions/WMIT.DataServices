@@ -119,11 +119,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\AddressesController.cs" />
     <Compile Include="Controllers\ContactsController.cs" />
     <Compile Include="Controllers\ContactsController2.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201504151956556_InitialCreate.cs" />
+    <Compile Include="Migrations\201504151956556_InitialCreate.Designer.cs">
+      <DependentUpon>201504151956556_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505051524438_AddressTable.cs" />
+    <Compile Include="Migrations\201505051524438_AddressTable.Designer.cs">
+      <DependentUpon>201505051524438_AddressTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AddressBookDB.cs" />
     <Compile Include="Models\Contact.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -145,6 +155,14 @@
       <Project>{7a0b795a-8c68-44ed-af75-ff4e1b63fb61}</Project>
       <Name>WMIT.DataServices</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201504151956556_InitialCreate.resx">
+      <DependentUpon>201504151956556_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505051524438_AddressTable.resx">
+      <DependentUpon>201505051524438_AddressTable.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

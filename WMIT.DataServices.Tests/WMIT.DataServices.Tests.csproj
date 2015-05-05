@@ -96,7 +96,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Common\TypeHelper.Test.cs" />
     <Compile Include="Controllers\RESTController.Test.cs" />
     <Compile Include="Fixtures\ContactsController.cs" />
     <Compile Include="Fixtures\TestDB.cs" />
