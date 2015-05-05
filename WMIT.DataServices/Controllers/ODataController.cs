@@ -11,6 +11,7 @@ using WMIT.DataServices.Model;
 using WMIT.DataServices.Common;
 using System.Runtime.ExceptionServices;
 using System.Data.Entity.Infrastructure;
+using System.Net;
 
 namespace WMIT.DataServices.Controllers
 {
@@ -144,24 +145,24 @@ namespace WMIT.DataServices.Controllers
             return Created(SingleResult.Create(queryable));
         }
 
-        //// DELETE: api/entities(5)
-        //[EnableQuery]
-        //public async Task<IHttpActionResult> Delete([FromODataUri]int key, ODataQueryOptions<TEntity> options)
-        //{
-        //    var queryable = Entities.ApplyQuery(options);
+        // DELETE: api/entities(5)
+        [EnableQuery]
+        public async Task<IHttpActionResult> Delete([FromODataUri]int key)
+        {
+            var entity = await Entities.SingleOrDefaultAsync(e => e.Id == key);
 
-        //    TEntity entity = await queryable.SingleOrDefaultAsync(e => e.Id == key);
-        //    if (entity == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (entity == null)
+            {
+                return NotFound();
+            }
 
-        //    entity.IsDeleted = true;
-        //    db.Entry(entity).State = EntityState.Modified;
+            entity.IsDeleted = true;
+            
+            db.Entry(entity).State = EntityState.Modified;
+            await db.SaveChangesAsync();
 
-        //    await db.SaveChangesAsync();
-        //    return Ok(entity);
-        //}
+            return StatusCode(HttpStatusCode.NoContent);
+        }
 
         #endregion
 
