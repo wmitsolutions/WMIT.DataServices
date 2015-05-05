@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WMIT.DataServices.REST;
+using WMIT.DataServices.Controllers;
 
 namespace WMIT.DataServices.Tests.Fixtures
 {

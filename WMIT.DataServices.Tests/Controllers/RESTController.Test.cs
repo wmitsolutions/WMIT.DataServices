@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
-using WMIT.DataServices.REST;
+using WMIT.DataServices.Controllers;
 using WMIT.DataServices.Tests.Fixtures;
 
 namespace WMIT.DataServices.Tests.Controllers

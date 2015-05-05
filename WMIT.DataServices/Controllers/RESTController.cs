@@ -11,7 +11,7 @@ using System.Web.Http.Description;
 using WMIT.DataServices.Common;
 using WMIT.DataServices.Model;
 
-namespace WMIT.DataServices.REST
+namespace WMIT.DataServices.Controllers
 {
     public class RESTController<TDbContext, TEntity> : ApiController
         where TDbContext : DbContext, new()
