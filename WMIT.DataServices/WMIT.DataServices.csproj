@@ -77,6 +77,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\ControllerHelpers.cs" />
+    <Compile Include="Common\ModelHelpers.cs" />
+    <Compile Include="Common\TypeHelpers.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Model\Entity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

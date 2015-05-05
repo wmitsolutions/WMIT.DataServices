@@ -5,6 +5,7 @@ using System.Web.Http;
 using System.Web.OData.Builder;
 using WMIT.DataServices.Demo.Models;
 using System.Web.OData.Extensions;
+using WMIT.DataServices.Common;
 
 namespace WMIT.DataServices.Demo
 {
@@ -23,21 +24,23 @@ namespace WMIT.DataServices.Demo
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            // OData
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Contact>("Contacts");
-            builder.EntitySet<Address>("Addresses");
+            //// OData
+            //ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            //builder.EntitySet<Contact>("Contacts");
+            //builder.EntitySet<Address>("Addresses");
 
-            //builder.EntityType<Entity>().Ignore(e => e.CreatedAt);
-            //builder.EntityType<Entity>().Ignore(e => e.CreatedBy);
-            //builder.EntityType<Entity>().Ignore(e => e.ModifiedAt);
-            //builder.EntityType<Entity>().Ignore(e => e.ModifiedBy);
-            //builder.EntityType<Entity>().Ignore(e => e.IsDeleted);
+            ////builder.EntityType<Entity>().Ignore(e => e.CreatedAt);
+            ////builder.EntityType<Entity>().Ignore(e => e.CreatedBy);
+            ////builder.EntityType<Entity>().Ignore(e => e.ModifiedAt);
+            ////builder.EntityType<Entity>().Ignore(e => e.ModifiedBy);
+            ////builder.EntityType<Entity>().Ignore(e => e.IsDeleted);
 
-            config.MapODataServiceRoute(
-                routeName: "odata",
-                routePrefix: "odata",
-                model: builder.GetEdmModel());
+            //config.MapODataServiceRoute(
+            //    routeName: "odata",
+            //    routePrefix: "odata",
+            //    model: builder.GetEdmModel());
+
+            config.AutoMapODataControllers();
         }
     }
 }
