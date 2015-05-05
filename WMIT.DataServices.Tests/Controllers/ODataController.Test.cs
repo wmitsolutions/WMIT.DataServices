@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Results;
+using System.Web.OData.Results;
 using WMIT.DataServices.Controllers;
 using WMIT.DataServices.Tests.Fixtures;
 
@@ -17,13 +19,17 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Initialization
 
         TestDB db = null;
-        ContactsRESTController ctrl = null;
+        ContactsODataController ctrl = null;
 
         [TestInitialize]
         public void Initialize()
         {
             db = TestDB.Create();
-            ctrl = new ContactsRESTController(db);
+            ctrl = new ContactsODataController(db);
+
+            // We need the empty configuration for the Validate() method call
+            // in the update tests
+            ctrl.Configuration = new HttpConfiguration();
         }
 
         #endregion
@@ -31,14 +37,13 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Tests - GetAll
 
         [TestMethod]
-        public async Task GetAll_CanGetAllDataEntries()
+        public void GetAll_CanGetAllDataEntries()
         {
-            var result = await ctrl.GetAll();
-            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<List<Contact>>));
+            var result = ctrl.Get();
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<IQueryable<Contact>>));
 
-            var entries = ((OkNegotiatedContentResult<List<Contact>>)result).Content;
-
-            Assert.AreEqual(4, entries.Count);
+            var entries = ((OkNegotiatedContentResult<IQueryable<Contact>>)result).Content;
+            Assert.AreEqual(4, entries.ToList().Count);
         }
 
         #endregion
@@ -46,12 +51,13 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Tests - GetById
 
         [TestMethod]
-        public async Task GetById_CanFindSingleEntityById()
+        public void GetById_CanFindSingleEntityById()
         {
-            var result = await ctrl.GetEntity(1);
-            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<Contact>));
+            var result = ctrl.Get(1);
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<SingleResult<Contact>>));
 
-            var contact = ((OkNegotiatedContentResult<Contact>)result).Content;
+            var resultContent = ((OkNegotiatedContentResult<SingleResult<Contact>>)result).Content;
+            var contact = resultContent.Queryable.Single();
 
             Assert.AreEqual(1, contact.Id);
             Assert.AreEqual("Terese", contact.FirstName);
@@ -62,17 +68,29 @@ namespace WMIT.DataServices.Tests.Controllers
         }
 
         [TestMethod]
-        public async Task GetById_CanReturnNotFound()
+        public void GetById_CanReturnNotFound()
         {
-            var result = await ctrl.GetEntity(999); // No contact 999 in data source
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            var result = ctrl.Get(999); // No contact 999 in data source
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<SingleResult<Contact>>));
+
+            var resultContent = ((OkNegotiatedContentResult<SingleResult<Contact>>)result).Content;
+            // We have to test against an empty SingleResult here, because we can't test against the
+            // HTTP status code. This is because we are testing against the controller methods instead of
+            // simulating HTTP calls. We should change this to real http calls against a test webserver.
+            // TODO: Change controller method tests to http tests
+            var foundContacts = resultContent.Queryable.ToList();
+            Assert.AreEqual(0, foundContacts.Count);
         }
 
         [TestMethod]
-        public async Task CanReturnNotFoundForDeletedEntries()
+        public void CanReturnNotFoundForDeletedEntries()
         {
-            var result = await ctrl.GetEntity(5); // Contact 5 is deleted (IsDeleted = true)
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            var result = ctrl.Get(5); // Contact 5 is deleted (IsDeleted = true)
+            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<SingleResult<Contact>>));
+
+            var resultContent = ((OkNegotiatedContentResult<SingleResult<Contact>>)result).Content;
+            var foundContacts = resultContent.Queryable.ToList();
+            Assert.AreEqual(0, foundContacts.Count);
         }
 
         #endregion
@@ -82,17 +100,21 @@ namespace WMIT.DataServices.Tests.Controllers
         [TestMethod]
         public async Task Delete_CanDeleteEntry()
         {
-            var deletionResult = await ctrl.DeleteEntity(1);
-            Assert.IsInstanceOfType(deletionResult, typeof(OkNegotiatedContentResult<Contact>));
+            var deletionResult = await ctrl.Delete(1);
+            Assert.IsInstanceOfType(deletionResult, typeof(StatusCodeResult));
 
-            var deletionResultContact = ((OkNegotiatedContentResult<Contact>)deletionResult).Content;
-            Assert.AreEqual(true, deletionResultContact.IsDeleted);
+            var deletionResultStatusCode = ((StatusCodeResult)deletionResult).StatusCode;
+            Assert.AreEqual(System.Net.HttpStatusCode.NoContent, deletionResultStatusCode);
 
-            var contacts = ((OkNegotiatedContentResult<List<Contact>>)await ctrl.GetAll()).Content;
+            var contacts = ((OkNegotiatedContentResult<IQueryable<Contact>>)ctrl.Get()).Content.ToList();
             Assert.AreEqual(3, contacts.Count);
 
-            var deletedContact = await ctrl.GetEntity(1);
-            Assert.IsInstanceOfType(deletedContact, typeof(NotFoundResult));
+            var deletedContactGetResult = ctrl.Get(1);
+            Assert.IsInstanceOfType(deletedContactGetResult, typeof(OkNegotiatedContentResult<SingleResult<Contact>>));
+
+            var resultContent = ((OkNegotiatedContentResult<SingleResult<Contact>>)deletedContactGetResult).Content;
+            var foundContacts = resultContent.Queryable.ToList();
+            Assert.AreEqual(0, foundContacts.Count);
         }
 
         #endregion
@@ -108,10 +130,10 @@ namespace WMIT.DataServices.Tests.Controllers
                 LastName = "Berry"
             };
 
-            var result = await ctrl.PostEntity(contact);
-            Assert.IsInstanceOfType(result, typeof(CreatedAtRouteNegotiatedContentResult<Contact>));
+            var result = await ctrl.Post(contact);
+            Assert.IsInstanceOfType(result, typeof(CreatedODataResult<Contact>));
 
-            var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)result).Content;
+            var resultContact = ((CreatedODataResult<Contact>)result).Entity;
             Assert.AreEqual(6, resultContact.Id);
         }
 
@@ -127,7 +149,7 @@ namespace WMIT.DataServices.Tests.Controllers
             ctrl.User = new User("user");
 
             var time = DateTime.Now;
-            var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)await ctrl.PostEntity(contact)).Content;
+            var resultContact = ((CreatedODataResult<Contact>)await ctrl.Post(contact)).Entity;
 
             Assert.AreEqual("user", resultContact.CreatedBy);
             Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
@@ -140,30 +162,30 @@ namespace WMIT.DataServices.Tests.Controllers
         [TestMethod]
         public async Task Update_CanUpdateEntry()
         {
-            var contact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            var contact = ((OkNegotiatedContentResult<SingleResult<Contact>>)ctrl.Get(1)).Content.Queryable.Single();
             contact.FirstName = "Changeme";
 
-            var result = await ctrl.PutEntity(contact.Id, contact);
-            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<Contact>));
+            var result = await ctrl.Put(contact.Id, contact);
+            Assert.IsInstanceOfType(result, typeof(UpdatedODataResult<SingleResult<Contact>>));
 
-            var resultContact = ((OkNegotiatedContentResult<Contact>)result).Content;
+            var resultContact = ((UpdatedODataResult<SingleResult<Contact>>)result).Entity.Queryable.Single();
             Assert.AreEqual("Changeme", resultContact.FirstName);
 
-            var updatedContact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            var updatedContact = ((OkNegotiatedContentResult<SingleResult<Contact>>)ctrl.Get(1)).Content.Queryable.Single();
             Assert.AreEqual("Changeme", updatedContact.FirstName);
         }
 
         [TestMethod]
         public async Task Update_ModificationStats()
         {
-            var contact = ((OkNegotiatedContentResult<Contact>)await ctrl.GetEntity(1)).Content;
+            var contact = ((OkNegotiatedContentResult<SingleResult<Contact>>)ctrl.Get(1)).Content.Queryable.Single();
             contact.FirstName = "Changeme";
 
             ctrl.User = new User("user");
 
             var time = DateTime.Now;
-            var resultContact = ((OkNegotiatedContentResult<Contact>)await ctrl.PutEntity(contact.Id, contact)).Content;
-
+            var resultContact = ((UpdatedODataResult<SingleResult<Contact>>)await ctrl.Put(contact.Id, contact)).Entity.Queryable.Single();
+            
             Assert.AreEqual("user", resultContact.ModifiedBy);
             Assert.IsTrue((resultContact.ModifiedAt - time) < TimeSpan.FromMinutes(5));
         }
