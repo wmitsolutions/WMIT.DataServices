@@ -17,11 +17,25 @@ namespace WMIT.DataServices.Tests
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+
+        public ICollection<Address> Addresses { get; set; }
+    }
+
+    class Address : Entity
+    {
+        public string Street { get; set; }
+        public string StreetNumber { get; set; }
+        public string City { get; set; }
+        public string PostalCode { get; set; }
+
+        public int ContactId { get; set; }
+        public Contact Contact { get; set; }
     }
 
     class TestDB : DbContext
     {
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         public TestDB()
         {

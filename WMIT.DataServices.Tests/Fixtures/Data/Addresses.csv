@@ -1,0 +1,6 @@
+﻿Id,Street,StreetNumber,PostalCode,City,ContactId,IsDeleted,CreatedBy,CreatedAt,ModifiedBy,ModifiedAt
+1,"Redmanstreet","60","10200","Redmancity",1,false,"system",04/13/2015 15:30:22,,
+2,"Esserstreet","61","10201","Essercity",2,false,"system",04/13/2015 15:31:22,,
+3,"Enloestreet","62","10202","Enloecity",2,false,"system",04/13/2015 15:31:22,,
+4,"Lodenstreet","63","10203","Lodencity",2,false,"system",04/13/2015 15:31:22,,
+5,"Gislerstreet","64","10204","Gislercity",2,false,"system",04/13/2015 15:31:22,,

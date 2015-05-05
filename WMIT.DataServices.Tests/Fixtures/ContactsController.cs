@@ -7,9 +7,15 @@ using WMIT.DataServices.Controllers;
 
 namespace WMIT.DataServices.Tests.Fixtures
 {
-    class ContactsController : RESTController<TestDB, Contact>
+    class ContactsRESTController : RESTController<TestDB, Contact>
     {
-        public ContactsController(TestDB db) : base(db) { }
-        public ContactsController() : base() { }
+        public ContactsRESTController(TestDB db) : base(db) { }
+        public ContactsRESTController() : base() { }
+    }
+
+    class ContactsODataController : ODataController<TestDB, Contact>
+    {
+        public ContactsODataController(TestDB db) : base(db) { }
+        public ContactsODataController() : base() { }
     }
 }

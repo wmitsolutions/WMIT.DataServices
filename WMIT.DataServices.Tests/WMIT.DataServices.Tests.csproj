@@ -96,6 +96,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Controllers\ODataController.Test.cs" />
     <Compile Include="Controllers\RESTController.Test.cs" />
     <Compile Include="Fixtures\ContactsController.cs" />
     <Compile Include="Fixtures\TestDB.cs" />
@@ -111,6 +112,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <EmbeddedResource Include="Fixtures\Data\Contacts.csv" />
+    <EmbeddedResource Include="Fixtures\Data\Addresses.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>

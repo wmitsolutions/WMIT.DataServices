@@ -12,7 +12,7 @@ using WMIT.DataServices.Tests.Fixtures;
 namespace WMIT.DataServices.Tests.Controllers
 {
     [TestClass]
-    public class RESTControllerTests
+    public class ODataControllerTests
     {
         #region Initialization
 
@@ -105,7 +105,7 @@ namespace WMIT.DataServices.Tests.Controllers
             var contact = new Contact()
             {
                 FirstName = "Chuck",
-                LastName ="Berry"
+                LastName = "Berry"
             };
 
             var result = await ctrl.PostEntity(contact);
@@ -128,7 +128,7 @@ namespace WMIT.DataServices.Tests.Controllers
 
             var time = DateTime.Now;
             var resultContact = ((CreatedAtRouteNegotiatedContentResult<Contact>)await ctrl.PostEntity(contact)).Content;
-            
+
             Assert.AreEqual("user", resultContact.CreatedBy);
             Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
         }
