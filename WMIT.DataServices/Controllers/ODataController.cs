@@ -47,12 +47,6 @@ namespace WMIT.DataServices.Controllers
         protected virtual void Initialize()
         {
             set = db.Set<TEntity>();
-
-            // Change Detection is not used in our web services,
-            // we can disable automatic change detection for the entire controller
-            // to boost the performance when executing FindAsync
-            // Ref: http://stackoverflow.com/questions/11686225/dbset-find-method-ridiculously-slow-compared-to-singleordefault-on-id
-            db.Configuration.AutoDetectChangesEnabled = false;
         }
 
         protected virtual async Task<bool> EntityExists(int id)
