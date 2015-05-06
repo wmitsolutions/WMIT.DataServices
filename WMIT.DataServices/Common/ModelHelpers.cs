@@ -14,7 +14,7 @@ namespace WMIT.DataServices.Common
     public static class ModelHelpers
     {
         // TODO: add documentation + tests
-        public static void AutoMapODataControllers(this HttpConfiguration configuration, string routeName = "odata", string routePrefix = "odata")
+        public static void AutoMapODataControllers(this HttpConfiguration configuration, string routeName = "odata", string routePrefix = "odata", Action<ODataConventionModelBuilder> builderConfig = null)
         {
             var builder = new ODataConventionModelBuilder();
 
@@ -33,6 +33,9 @@ namespace WMIT.DataServices.Common
                 var entityTypeConfig = builder.AddEntityType(entityType);
                 builder.AddEntitySet(entitySetName, entityTypeConfig);
             }
+
+            if (builderConfig != null)
+                builderConfig(builder);
 
             var model = builder.GetEdmModel();
             configuration.MapODataServiceRoute(
