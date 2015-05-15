@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -51,42 +52,96 @@ namespace WMIT.DataServices.Common
         private static void MapODataControllerActions(ODataConventionModelBuilder builder, Type ctrlType, EntityTypeConfiguration entityTypeConfig, EntitySetConfiguration entitySetConfig)
         {
             // Map actions
-            var methods = ctrlType.GetMethods().Where(m => m.GetCustomAttribute<ODataActionAttribute>() != null);
+            var methods = ctrlType.GetMethods().Where(m => m.GetCustomAttribute<ODataProcedureAttribute>() != null);
             foreach (var method in methods)
             {
-                var attr = method.GetCustomAttribute<ODataActionAttribute>();
+                var attr = method.GetCustomAttribute<ODataProcedureAttribute>();
                 ProcedureConfiguration procedure;
 
+                // TODO: Extract into separate class if possible
                 Func<string, IEdmTypeConfiguration, ProcedureConfiguration> setBindingParameterFunc;
 
-                if(attr.Type == ODataActionType.Action)
+                if (attr.Type == ODataProcedureType.Action)
                 {
+                    // Create an action
                     procedure = builder.Action(method.Name);
                     setBindingParameterFunc = ((ActionConfiguration)procedure).SetBindingParameter;
                 }
                 else
                 {
+                    // Create a function
                     procedure = builder.Function(method.Name);
                     setBindingParameterFunc = ((FunctionConfiguration)procedure).SetBindingParameter;
                 }
 
-                if (attr.Target == ODataActionTarget.Entity)
+                if (attr.Target == ODataProcedureTarget.Entity)
                 {
+                    // Bind to entity
                     setBindingParameterFunc(BindingParameterConfiguration.DefaultBindingParameterName, entityTypeConfig);
                 }
                 else
                 {
+                    // Bind to collection
                     var entityCollectionConfig = new CollectionTypeConfiguration(entityTypeConfig, typeof(Enumerable));
                     setBindingParameterFunc(BindingParameterConfiguration.DefaultBindingParameterName, entityCollectionConfig);
                 }
 
-                var parameterAttrs = method.GetCustomAttributes<ODataActionParameterAttribute>();
+                var parameterAttrs = method.GetCustomAttributes<ODataProcedureParameterAttribute>();
                 foreach (var parameterAttr in parameterAttrs)
                 {
-                    procedure.AddParameter(parameterAttr.Name, builder.GetTypeConfigurationOrNull(parameterAttr.Type));
+                    var parameterType = parameterAttr.Type;
+
+                    // Is the parameter type a collection?
+                    if (parameterType.IsGenericType && parameterType.GetInterface(typeof(IEnumerable).Name, false) != null)
+                    {
+                        // If the parameter is a collection, we need to call the generic CollectionParameter<T>(name) method
+                        var genericArgument = parameterType.GetGenericArguments().Single();
+
+                        var parameterMethod = procedure.GetType().GetMethod("CollectionParameter");
+                        var methodInfo = parameterMethod.MakeGenericMethod(genericArgument);
+                        methodInfo.Invoke(procedure, new object[] { parameterAttr.Name });
+                    }
+                    else
+                    {
+                        // If the parameter is not a collection, we call the generic Parameter<T>(name) method
+                        var parameterMethod = procedure.GetType().GetMethod("Parameter");
+                        var methodInfo = parameterMethod.MakeGenericMethod(parameterType);
+                        methodInfo.Invoke(procedure, new object[] { parameterAttr.Name });
+                    }
                 }
 
-                procedure.ReturnType = builder.GetTypeConfigurationOrNull(method.ReturnType);
+                if (attr.Returns != null)
+                {
+                    var returns = procedure.GetType().GetMethod("Returns");
+                    var generic = returns.MakeGenericMethod(attr.Returns);
+                    generic.Invoke(procedure, null);
+                }
+                else if (attr.ReturnsCollection != null)
+                {
+                    var returnsCollection = procedure.GetType().GetMethod("ReturnsCollection");
+                    var generic = returnsCollection.MakeGenericMethod(attr.ReturnsCollection);
+                    generic.Invoke(procedure, null);
+                }
+                else if (attr.ReturnsEntity != null)
+                {
+                    var returnsEntity = procedure.GetType().GetMethod("ReturnsFromEntitySet", new Type[] { typeof(string) });
+                    var generic = returnsEntity.MakeGenericMethod(attr.ReturnsEntity);
+
+                    var entitySet = builder.EntitySets.Single(set => set.ClrType == attr.ReturnsEntity);
+                    generic.Invoke(procedure, new object[] { entitySet.Name });
+                }
+                else if (attr.ReturnsEntityCollection != null)
+                {
+                    var returnsEntity = procedure.GetType().GetMethod("ReturnsCollectionFromEntitySet", new Type[] { typeof(string) });
+                    var generic = returnsEntity.MakeGenericMethod(attr.ReturnsEntityCollection);
+
+                    var entitySet = builder.EntitySets.Single(set => set.ClrType == attr.ReturnsEntityCollection);
+                    generic.Invoke(procedure, new object[] { entitySet.Name });
+                }
+                else
+                {
+                    procedure.ReturnType = builder.GetTypeConfigurationOrNull(method.ReturnType);
+                }
             }
         }
 
@@ -94,7 +149,7 @@ namespace WMIT.DataServices.Common
         {
             var entityType = entityTypeConfig.ClrType;
 
-            foreach(var property in entityType.GetProperties().Where(p => p.GetCustomAttribute<ODataIgnoreAttribute>() != null))
+            foreach (var property in entityType.GetProperties().Where(p => p.GetCustomAttribute<ODataIgnoreAttribute>() != null))
             {
                 entityTypeConfig.RemoveProperty(property);
             }

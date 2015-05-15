@@ -6,6 +6,7 @@ using System.Web.OData.Builder;
 using WMIT.DataServices.Demo.Models;
 using System.Web.OData.Extensions;
 using WMIT.DataServices.Common;
+using WMIT.DataServices.Model;
 
 namespace WMIT.DataServices.Demo
 {
@@ -40,7 +41,12 @@ namespace WMIT.DataServices.Demo
             //    routePrefix: "odata",
             //    model: builder.GetEdmModel());
 
-            config.AutoMapODataControllers();
+            config.AutoMapODataControllers(builderConfig: (builder) =>
+            {
+                //builder.EntityType<Entity>().Abstract();
+                var conf = builder.Procedures.Single(p => p.Name == "SetTags");
+                ((ActionConfiguration)conf).ReturnsFromEntitySet<Contact>("Contacts");
+            });
         }
     }
 }
