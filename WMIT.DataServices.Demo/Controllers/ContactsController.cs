@@ -20,7 +20,7 @@ namespace WMIT.DataServices.Demo.Controllers
             return 5;
         }
 
-        [ODataAction(ReturnsEntity=typeof(IEnumerable<Contact>))]
+        [ODataAction(ReturnsEntity=typeof(Contact))]
         [ODataProcedureParameter(Name = "tagIds", Type = typeof(IEnumerable<int>))]
         public IHttpActionResult SetTags([FromODataUri]int key, ODataActionParameters parameters)
         {
@@ -39,7 +39,7 @@ namespace WMIT.DataServices.Demo.Controllers
             //    family.Tags.Add(tag);
             //}
             //db.SaveChanges();
-            var contact = Entities.SingleOrDefault(e => e.Id == 1);
+            //var contact = this.s Entities.SingleOrDefault(e => e.Id == 1);
             return Ok(tagIds.ToList());
         }
     }

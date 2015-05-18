@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using WMIT.DataServices.Common;
 using WMIT.DataServices.Model;
+using WMIT.DataServices.Services;
 
 namespace WMIT.DataServices.Controllers
 {
@@ -19,43 +21,21 @@ namespace WMIT.DataServices.Controllers
     {
         #region Internal
 
-        protected virtual IQueryable<TEntity> Entities
-        {
-            get
-            {
-                return set.Where(e => !e.IsDeleted);
-            }
-        }
+        IDataService<TEntity> service;
 
-        protected TDbContext db;
-        protected DbSet<TEntity> set;
-
-        public RESTController(TDbContext dbContext)
+        public RESTController(IDataService<TEntity> service)
         {
-            db = dbContext;
-            Initialize();
+            this.service = service;
         }
 
         public RESTController()
         {
-            db = new TDbContext();
-            Initialize();
+            this.service = new EntityDataService<TDbContext, TEntity>(this.User.Identity);
         }
-
-        protected virtual void Initialize()
-        {
-            set = db.Set<TEntity>();
-
-            // Change Detection is not used in our web services,
-            // we can disable automatic change detection for the entire controller
-            // to boost the performance when executing FindAsync
-            // Ref: http://stackoverflow.com/questions/11686225/dbset-find-method-ridiculously-slow-compared-to-singleordefault-on-id
-            db.Configuration.AutoDetectChangesEnabled = false;
-        }
-
+        
         protected virtual async Task<bool> EntityExists(int id)
         {
-            TEntity entity = await Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await service.Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
             return entity != null;
         }
 
@@ -66,14 +46,14 @@ namespace WMIT.DataServices.Controllers
         // GET: api/entities
         public virtual async Task<IHttpActionResult> GetAll()
         {
-            var entities = await Entities.ToListAsync();
+            var entities = await service.Entities.ToListAsync();
             return Ok(entities);
         }
 
         // GET: api/entities/5
         public virtual async Task<IHttpActionResult> GetEntity(int id)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await service.Entities.SingleOrDefaultAsync(e => e.Id == id);
 
             if (entity != null)
             {
@@ -85,9 +65,25 @@ namespace WMIT.DataServices.Controllers
             }
         }
 
+        // POST: api/entities
+        public virtual async Task<IHttpActionResult> PostEntity(TEntity entity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await service.Insert(entity);
+
+            var createdEntity = await service.Entities.SingleOrDefaultAsync(e => e.Id == entity.Id);
+            return CreatedAtRoute("DefaultApi", new { id = entity.Id }, createdEntity);
+        }
+
         // PUT: api/Contacts/5
         public virtual async Task<IHttpActionResult> PutEntity(int id, TEntity entity)
         {
+            Validate<TEntity>(entity);
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -103,70 +99,23 @@ namespace WMIT.DataServices.Controllers
                 return NotFound();
             }
 
-            db.Entry(entity).Update().SetModificationStatistics(User.Identity);
+            await service.Update(entity);
 
-            TEntity updatedEntity = null;
-            ExceptionDispatchInfo capturedException = null;
-
-            try
-            {
-                await db.SaveChangesAsync();
-
-                // Detach entity to ensure it will be refetched in later querying
-                db.Entry(entity).State = EntityState.Detached;
-
-                updatedEntity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                capturedException = ExceptionDispatchInfo.Capture(ex);
-            }
-
-            if (capturedException != null)
-            {
-                if (!await EntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    capturedException.Throw();
-                }
-            }
-
+            var updatedEntity = await service.Entities.SingleOrDefaultAsync(e => e.Id == id);
             return Ok(updatedEntity);
-        }
-
-        // POST: api/entities
-        public virtual async Task<IHttpActionResult> PostEntity(TEntity entity)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            entity.SetCreationStatistics(User.Identity);
-
-            db.Set<TEntity>().Add(entity);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = entity.Id }, entity);
         }
 
         // DELETE: api/entities/5
         public virtual async Task<IHttpActionResult> DeleteEntity(int id)
         {
-            TEntity entity = await Entities.SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await service.Entities.SingleOrDefaultAsync(e => e.Id == id);
             if (entity == null)
             {
                 return NotFound();
             }
 
-            entity.IsDeleted = true;
-            db.Entry(entity).State = EntityState.Modified;
-
-            await db.SaveChangesAsync();
-            return Ok(entity);
+            await service.Delete(entity);
+            return StatusCode(HttpStatusCode.NoContent);
         }
 
         #endregion
@@ -177,7 +126,8 @@ namespace WMIT.DataServices.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                if (this.service is IDisposable)
+                    ((IDisposable)this.service).Dispose();
             }
             base.Dispose(disposing);
         }

@@ -12,6 +12,7 @@ using WMIT.DataServices.Common;
 using System.Runtime.ExceptionServices;
 using System.Data.Entity.Infrastructure;
 using System.Net;
+using WMIT.DataServices.Services;
 
 namespace WMIT.DataServices.Controllers
 {
@@ -21,37 +22,21 @@ namespace WMIT.DataServices.Controllers
     {
         #region Internal
 
-        protected virtual IQueryable<TEntity> Entities
-        {
-            get
-            {
-                return set.Where(e => !e.IsDeleted);
-            }
-        }
+        IDataService<TEntity> service;
 
-        protected TDbContext db = null;
-        protected DbSet<TEntity> set = null;
-
-        public ODataController(TDbContext dbContext)
+        public ODataController(IDataService<TEntity> service)
         {
-            db = dbContext;
-            Initialize();
+            this.service = service;
         }
 
         public ODataController()
         {
-            db = new TDbContext();
-            Initialize();
+            this.service = new EntityDataService<TDbContext, TEntity>(this.User.Identity);
         }
-
-        protected virtual void Initialize()
-        {
-            set = db.Set<TEntity>();
-        }
-
+        
         protected virtual async Task<bool> EntityExists(int id)
         {
-            TEntity entity = await Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
+            TEntity entity = await service.Entities.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id);
             return entity != null;
         }
 
@@ -63,14 +48,14 @@ namespace WMIT.DataServices.Controllers
         [EnableQuery()]
         public virtual IHttpActionResult Get()
         {
-            return Ok(Entities);
+            return Ok(service.Entities);
         }
 
         // GET: api/Contacts(5)
         [EnableQuery]
         public virtual IHttpActionResult Get([FromODataUri]int key)
         {
-            var queryable = Entities.Where(e => e.Id == key);
+            var queryable = service.Entities.Where(e => e.Id == key);
             return Ok(SingleResult.Create(queryable));
         }
 
@@ -83,16 +68,10 @@ namespace WMIT.DataServices.Controllers
                 return BadRequest(ModelState);
             }
 
-            // TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
-            // We should implement an Authorize handler for this behavior which makes use of 
-            // SystemFields/FieldAccess
-            entity.SetCreationStatistics(User.Identity);
+            await service.Insert(entity);
 
-            db.Set<TEntity>().Add(entity);
-            await db.SaveChangesAsync();
-
-            entity = await Entities.Where(e => e.Id == entity.Id).SingleAsync();
-            return Created(entity);
+            var queryable = service.Entities.Where(e => e.Id == entity.Id);
+            return Created(SingleResult.Create(queryable));
         }
 
         // PUT: api/Contacts(5)
@@ -106,39 +85,19 @@ namespace WMIT.DataServices.Controllers
                 return BadRequest(ModelState);
             }
 
+            if (key != entity.Id)
+            {
+                return BadRequest();
+            }
+
             if (!await EntityExists(key))
             {
                 return NotFound();
             }
 
-            db.Entry(entity).Update().SetModificationStatistics(User.Identity);
-            
-            ExceptionDispatchInfo capturedException = null;
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                capturedException = ExceptionDispatchInfo.Capture(ex);
-            }
+            await service.Update(entity);
 
-            if (capturedException != null)
-            {
-                if (!await EntityExists(key))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    capturedException.Throw();
-                }
-            }
-
-            // Detach entity to ensure it will be refetched in later querying
-            db.Entry(entity).State = EntityState.Detached;
-
-            var queryable = Entities.Where(e => e.Id == entity.Id);
+            var queryable = service.Entities.Where(e => e.Id == key);
             return Updated(SingleResult.Create(queryable));
         }
 
@@ -146,31 +105,29 @@ namespace WMIT.DataServices.Controllers
         [EnableQuery]
         public async Task<IHttpActionResult> Delete([FromODataUri]int key)
         {
-            var entity = await Entities.SingleOrDefaultAsync(e => e.Id == key);
+            var entity = await service.Entities.SingleOrDefaultAsync(e => e.Id == key);
 
             if (entity == null)
             {
                 return NotFound();
             }
 
-            entity.IsDeleted = true;
-            
-            db.Entry(entity).State = EntityState.Modified;
-            await db.SaveChangesAsync();
-
+            await service.Delete(entity);
             return StatusCode(HttpStatusCode.NoContent);
         }
 
         #endregion
 
-        #region IDisposable implementation
+        #region IDisposable
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                if (this.service is IDisposable)
+                    ((IDisposable)this.service).Dispose();
             }
+
             base.Dispose(disposing);
         }
 

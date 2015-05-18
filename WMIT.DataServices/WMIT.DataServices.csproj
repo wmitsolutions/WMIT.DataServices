@@ -88,14 +88,13 @@
     <Compile Include="Controllers\RESTController.cs" />
     <Compile Include="Security\EntityAccessAttribute.cs" />
     <Compile Include="Security\FieldAccessAttribute.cs" />
+    <Compile Include="Services\DataService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

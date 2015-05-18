@@ -3,10 +3,13 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Results;
 using WMIT.DataServices.Controllers;
+using WMIT.DataServices.Services;
 using WMIT.DataServices.Tests.Fixtures;
 
 namespace WMIT.DataServices.Tests.Controllers
@@ -17,13 +20,19 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Initialization
 
         TestDB db = null;
+        EntityDataService<TestDB, Contact> service = null;
         ContactsRESTController ctrl = null;
 
         [TestInitialize]
         public void Initialize()
         {
             db = TestDB.Create();
-            ctrl = new ContactsRESTController(db);
+
+            var user = new User("user");
+            service = new EntityDataService<TestDB, Contact>(db, user.Identity);
+            ctrl = new ContactsRESTController(service);
+
+            ctrl.Configuration = new HttpConfiguration();
         }
 
         #endregion
@@ -83,10 +92,10 @@ namespace WMIT.DataServices.Tests.Controllers
         public async Task Delete_CanDeleteEntry()
         {
             var deletionResult = await ctrl.DeleteEntity(1);
-            Assert.IsInstanceOfType(deletionResult, typeof(OkNegotiatedContentResult<Contact>));
+            Assert.IsInstanceOfType(deletionResult, typeof(StatusCodeResult));
 
-            var deletionResultContact = ((OkNegotiatedContentResult<Contact>)deletionResult).Content;
-            Assert.AreEqual(true, deletionResultContact.IsDeleted);
+            var deletionResultStatusCode = ((StatusCodeResult)deletionResult).StatusCode;
+            Assert.AreEqual(HttpStatusCode.NoContent, deletionResultStatusCode);
 
             var contacts = ((OkNegotiatedContentResult<List<Contact>>)await ctrl.GetAll()).Content;
             Assert.AreEqual(3, contacts.Count);

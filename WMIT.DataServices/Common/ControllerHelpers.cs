@@ -36,6 +36,16 @@ namespace WMIT.DataServices.Common
             return entry;
         }
 
+        public static DbEntityEntry<T> Delete<T>(this DbEntityEntry<T> entry) where T : class, IEntity
+        {
+            entry.State = EntityState.Unchanged;
+
+            entry.Entity.IsDeleted = true;
+            entry.Property(e => e.IsDeleted).IsModified = true;
+
+            return entry;
+        }
+
         public static void SetModificationStatistics<T>(this DbEntityEntry<T> entry, IIdentity user) where T : class, IEntity
         {
             entry.Entity.ModifiedBy = user.Name;

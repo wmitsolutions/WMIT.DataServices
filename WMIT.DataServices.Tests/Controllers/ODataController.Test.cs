@@ -9,6 +9,7 @@ using System.Web.Http;
 using System.Web.Http.Results;
 using System.Web.OData.Results;
 using WMIT.DataServices.Controllers;
+using WMIT.DataServices.Services;
 using WMIT.DataServices.Tests.Fixtures;
 
 namespace WMIT.DataServices.Tests.Controllers
@@ -19,13 +20,17 @@ namespace WMIT.DataServices.Tests.Controllers
         #region Initialization
 
         TestDB db = null;
+        EntityDataService<TestDB, Contact> service = null;
         ContactsODataController ctrl = null;
 
         [TestInitialize]
         public void Initialize()
         {
             db = TestDB.Create();
-            ctrl = new ContactsODataController(db);
+            
+            var user = new User("user");
+            service = new EntityDataService<TestDB, Contact>(db, user.Identity);
+            ctrl = new ContactsODataController(service);
 
             // We need the empty configuration for the Validate() method call
             // in the update tests
@@ -131,9 +136,9 @@ namespace WMIT.DataServices.Tests.Controllers
             };
 
             var result = await ctrl.Post(contact);
-            Assert.IsInstanceOfType(result, typeof(CreatedODataResult<Contact>));
+            Assert.IsInstanceOfType(result, typeof(CreatedODataResult<SingleResult<Contact>>));
 
-            var resultContact = ((CreatedODataResult<Contact>)result).Entity;
+            var resultContact = ((CreatedODataResult<SingleResult<Contact>>)result).Entity.Queryable.Single();
             Assert.AreEqual(6, resultContact.Id);
         }
 
@@ -146,10 +151,10 @@ namespace WMIT.DataServices.Tests.Controllers
                 LastName = "Berry"
             };
 
-            ctrl.User = new User("user");
-
             var time = DateTime.Now;
-            var resultContact = ((CreatedODataResult<Contact>)await ctrl.Post(contact)).Entity;
+
+            var result = ((CreatedODataResult<SingleResult<Contact>>)await ctrl.Post(contact));
+            var resultContact = ((CreatedODataResult<SingleResult<Contact>>)result).Entity.Queryable.Single();
 
             Assert.AreEqual("user", resultContact.CreatedBy);
             Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
@@ -180,8 +185,6 @@ namespace WMIT.DataServices.Tests.Controllers
         {
             var contact = ((OkNegotiatedContentResult<SingleResult<Contact>>)ctrl.Get(1)).Content.Queryable.Single();
             contact.FirstName = "Changeme";
-
-            ctrl.User = new User("user");
 
             var time = DateTime.Now;
             var resultContact = ((UpdatedODataResult<SingleResult<Contact>>)await ctrl.Put(contact.Id, contact)).Entity.Queryable.Single();
