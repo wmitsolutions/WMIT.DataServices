@@ -10,15 +10,6 @@ using WMIT.DataServices.Common;
 
 namespace WMIT.DataServices.Services
 {
-    public interface IDataService<T>
-    {
-        IQueryable<T> Entities { get; }
-
-        Task Insert(T item);
-        Task Update(T item);
-        Task Delete(T item);
-    }
-
     public class EntityDataService<TDbContext, TEntity> : IDataService<TEntity>, IDisposable
         where TDbContext : DbContext, new()
         where TEntity : class, IEntity
@@ -57,7 +48,9 @@ namespace WMIT.DataServices.Services
 
         #endregion
 
-        public async Task Insert(TEntity item)
+        #region Actions
+
+        public virtual async Task Insert(TEntity item)
         {
             // TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
             // We should implement an Authorize handler for this behavior which makes use of 
@@ -69,7 +62,7 @@ namespace WMIT.DataServices.Services
             db.Entry(item).State = EntityState.Detached;
         }
 
-        public async Task Update(TEntity item)
+        public virtual async Task Update(TEntity item)
         {
             db.Entry(item).Update().SetModificationStatistics(this.identity);
 
@@ -77,13 +70,15 @@ namespace WMIT.DataServices.Services
             db.Entry(item).State = EntityState.Detached;
         }
 
-        public async Task Delete(TEntity item)
+        public virtual async Task Delete(TEntity item)
         {
             db.Entry(item).Delete().SetModificationStatistics(this.identity);
 
             await db.SaveChangesAsync();
             db.Entry(item).State = EntityState.Detached;
         }
+
+        #endregion
 
         #region IDisposable implementation
 

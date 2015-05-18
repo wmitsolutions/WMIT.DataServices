@@ -88,7 +88,8 @@
     <Compile Include="Controllers\RESTController.cs" />
     <Compile Include="Security\EntityAccessAttribute.cs" />
     <Compile Include="Security\FieldAccessAttribute.cs" />
-    <Compile Include="Services\DataService.cs" />
+    <Compile Include="Services\EntityDataService.cs" />
+    <Compile Include="Services\IDataService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
