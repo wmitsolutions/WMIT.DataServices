@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.OData;
@@ -13,14 +14,14 @@ namespace WMIT.DataServices.Demo.Controllers
 {
     public class ContactsController : ODataController<AddressBookDB, Contact>
     {
-        [ODataAction]
-        [ODataProcedureParameter(Name="test", Type=typeof(int))]
+        //[ODataAction(ReturnsEntityCollection)]
+        [ODataProcedureParameter(Name = "test", Type = typeof(int))]
         public int AddTag(ODataActionParameters parameters)
         {
             return 5;
         }
 
-        [ODataAction(ReturnsEntity=typeof(Contact))]
+        [ODataAction(ReturnsEntity = typeof(Contact))]
         [ODataProcedureParameter(Name = "tagIds", Type = typeof(IEnumerable<int>))]
         public IHttpActionResult SetTags([FromODataUri]int key, ODataActionParameters parameters)
         {
@@ -41,6 +42,13 @@ namespace WMIT.DataServices.Demo.Controllers
             //db.SaveChanges();
             //var contact = this.s Entities.SingleOrDefault(e => e.Id == 1);
             return Ok(tagIds.ToList());
+        }
+
+        [HttpGet]
+        [ODataFunction(Namespace="test", Returns=typeof(int), Target=ODataProcedureTarget.Collection)]
+        public IHttpActionResult quark(ODataActionParameters parameters)
+        {
+            return Ok(5);
         }
     }
 }

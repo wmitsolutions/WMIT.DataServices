@@ -20,8 +20,14 @@ namespace WMIT.DataServices.Common.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class ODataProcedureAttribute : Attribute
     {
-        public string ActionName { get; set; }
-        public string NamespaceName { get; set; }
+        public string ProcedureName { get; set; }
+        public string Namespace { get; set; }
+
+        public ODataProcedureAttribute()
+        {
+            Namespace = "Default";
+        }
+
         public ODataProcedureType Type { get; set; }
         public ODataProcedureTarget Target { get; set; }
 

@@ -61,18 +61,23 @@ namespace WMIT.DataServices.Common
                 // TODO: Extract into separate class if possible
                 Func<string, IEdmTypeConfiguration, ProcedureConfiguration> setBindingParameterFunc;
 
+                string previousNamespace = builder.Namespace;
+                builder.Namespace = attr.Namespace;
+
                 if (attr.Type == ODataProcedureType.Action)
                 {
                     // Create an action
-                    procedure = builder.Action(method.Name);
+                    procedure = builder.Action(attr.ProcedureName ?? method.Name);
                     setBindingParameterFunc = ((ActionConfiguration)procedure).SetBindingParameter;
                 }
                 else
                 {
                     // Create a function
-                    procedure = builder.Function(method.Name);
+                    procedure = builder.Function(attr.ProcedureName ?? method.Name);
                     setBindingParameterFunc = ((FunctionConfiguration)procedure).SetBindingParameter;
                 }
+
+                builder.Namespace = previousNamespace;
 
                 if (attr.Target == ODataProcedureTarget.Entity)
                 {
