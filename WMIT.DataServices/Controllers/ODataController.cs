@@ -71,7 +71,7 @@ namespace WMIT.DataServices.Controllers
             await service.Insert(entity);
 
             var queryable = service.Entities.Where(e => e.Id == entity.Id);
-            return Created(SingleResult.Create(queryable));
+            return Content(HttpStatusCode.Created, SingleResult.Create(queryable));
         }
 
         // PUT: api/Contacts(5)
