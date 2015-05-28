@@ -19,20 +19,12 @@ namespace WMIT.DataServices.Tests.Controllers
     {
         #region Initialization
 
-        TestDB db = null;
-        EntityDataService<TestDB, Contact> service = null;
         ContactsRESTController ctrl = null;
 
         [TestInitialize]
         public void Initialize()
         {
-            db = TestDB.Create();
-
-            var user = new User("user");
-            service = new EntityDataService<TestDB, Contact>(db, user.Identity);
-            ctrl = new ContactsRESTController(service);
-
-            ctrl.Configuration = new HttpConfiguration();
+            ctrl = ContactsRESTController.Mock();
         }
 
         #endregion

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -19,22 +20,12 @@ namespace WMIT.DataServices.Tests.Controllers
     {
         #region Initialization
 
-        TestDB db = null;
-        EntityDataService<TestDB, Contact> service = null;
         ContactsODataController ctrl = null;
 
         [TestInitialize]
         public void Initialize()
         {
-            db = TestDB.Create();
-            
-            var user = new User("user");
-            service = new EntityDataService<TestDB, Contact>(db, user.Identity);
-            ctrl = new ContactsODataController(service);
-
-            // We need the empty configuration for the Validate() method call
-            // in the update tests
-            ctrl.Configuration = new HttpConfiguration();
+            ctrl = ContactsODataController.Mock();
         }
 
         #endregion
@@ -136,9 +127,10 @@ namespace WMIT.DataServices.Tests.Controllers
             };
 
             var result = await ctrl.Post(contact);
-            Assert.IsInstanceOfType(result, typeof(CreatedODataResult<SingleResult<Contact>>));
+            Assert.IsInstanceOfType(result, typeof(NegotiatedContentResult<SingleResult<Contact>>));
+            Assert.AreEqual(HttpStatusCode.Created, ((NegotiatedContentResult<SingleResult<Contact>>)result).StatusCode);
 
-            var resultContact = ((CreatedODataResult<SingleResult<Contact>>)result).Entity.Queryable.Single();
+            var resultContact = ((NegotiatedContentResult<SingleResult<Contact>>)result).Content.Queryable.Single();
             Assert.AreEqual(6, resultContact.Id);
         }
 
@@ -153,8 +145,8 @@ namespace WMIT.DataServices.Tests.Controllers
 
             var time = DateTime.Now;
 
-            var result = ((CreatedODataResult<SingleResult<Contact>>)await ctrl.Post(contact));
-            var resultContact = ((CreatedODataResult<SingleResult<Contact>>)result).Entity.Queryable.Single();
+            var result = ((NegotiatedContentResult<SingleResult<Contact>>)await ctrl.Post(contact));
+            var resultContact = ((NegotiatedContentResult<SingleResult<Contact>>)result).Content.Queryable.Single();
 
             Assert.AreEqual("user", resultContact.CreatedBy);
             Assert.IsTrue((resultContact.CreatedAt - time) < TimeSpan.FromMinutes(5));
