@@ -22,7 +22,7 @@ namespace WMIT.DataServices.Controllers
     {
         #region Internal
 
-        IDataService<TEntity> service;
+        protected IDataService<TEntity> service;
 
         public ODataController(IDataService<TEntity> service)
         {

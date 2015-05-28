@@ -21,7 +21,7 @@ namespace WMIT.DataServices.Controllers
     {
         #region Internal
 
-        IDataService<TEntity> service;
+        protected IDataService<TEntity> service;
 
         public RESTController(IDataService<TEntity> service)
         {
