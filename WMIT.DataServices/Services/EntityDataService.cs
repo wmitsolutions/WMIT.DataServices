@@ -20,13 +20,13 @@ namespace WMIT.DataServices.Services
         {
             get
             {
-                return set.Where(e => !e.IsDeleted);
+                return Set.Where(e => !e.IsDeleted);
             }
         }
 
-        protected TDbContext db = null;
-        protected DbSet<TEntity> set = null;
-        protected IIdentity identity = null;
+        public TDbContext DbContext { get; protected set; }
+        public DbSet<TEntity> Set { get; protected set; }
+        public IIdentity Identity { get; protected set; }
 
         public EntityDataService(TDbContext dbContext, IIdentity identity)
         {
@@ -40,10 +40,10 @@ namespace WMIT.DataServices.Services
 
         protected virtual void Initialize(TDbContext dbContext, IIdentity identity)
         {
-            this.db = dbContext ?? new TDbContext();
-            this.set = this.db.Set<TEntity>();
+            this.DbContext = dbContext ?? new TDbContext();
+            this.Set = this.DbContext.Set<TEntity>();
 
-            this.identity = identity;
+            this.Identity = identity;
         }
 
         #endregion
@@ -55,27 +55,27 @@ namespace WMIT.DataServices.Services
             // TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
             // We should implement an Authorize handler for this behavior which makes use of 
             // SystemFields/FieldAccess
-            item.SetCreationStatistics(this.identity);
-            db.Set<TEntity>().Add(item);
+            item.SetCreationStatistics(this.Identity);
+            DbContext.Set<TEntity>().Add(item);
 
-            await db.SaveChangesAsync();
-            db.Entry(item).State = EntityState.Detached;
+            await DbContext.SaveChangesAsync();
+            DbContext.Entry(item).State = EntityState.Detached;
         }
 
         public virtual async Task Update(TEntity item)
         {
-            db.Entry(item).Update().SetModificationStatistics(this.identity);
+            DbContext.Entry(item).Update().SetModificationStatistics(this.Identity);
 
-            await db.SaveChangesAsync();
-            db.Entry(item).State = EntityState.Detached;
+            await DbContext.SaveChangesAsync();
+            DbContext.Entry(item).State = EntityState.Detached;
         }
 
         public virtual async Task Delete(TEntity item)
         {
-            db.Entry(item).Delete().SetModificationStatistics(this.identity);
+            DbContext.Entry(item).Delete().SetModificationStatistics(this.Identity);
 
-            await db.SaveChangesAsync();
-            db.Entry(item).State = EntityState.Detached;
+            await DbContext.SaveChangesAsync();
+            DbContext.Entry(item).State = EntityState.Detached;
         }
 
         #endregion
@@ -92,7 +92,7 @@ namespace WMIT.DataServices.Services
         {
             if (disposing)
             {
-                db.Dispose();
+                DbContext.Dispose();
             }
         }
 
