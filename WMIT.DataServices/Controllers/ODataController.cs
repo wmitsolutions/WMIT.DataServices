@@ -61,7 +61,7 @@ namespace WMIT.DataServices.Controllers
 
         // POST: api/entities
         [EnableQuery]
-        public async Task<IHttpActionResult> Post(TEntity entity)
+        public virtual async Task<IHttpActionResult> Post(TEntity entity)
         {
             if (!ModelState.IsValid)
             {
@@ -76,7 +76,7 @@ namespace WMIT.DataServices.Controllers
 
         // PUT: api/Contacts(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity)
+        public virtual async Task<IHttpActionResult> Put([FromODataUri]int key, TEntity entity)
         {
             Validate<TEntity>(entity);
 
@@ -103,7 +103,7 @@ namespace WMIT.DataServices.Controllers
 
         // DELETE: api/entities(5)
         [EnableQuery]
-        public async Task<IHttpActionResult> Delete([FromODataUri]int key)
+        public virtual async Task<IHttpActionResult> Delete([FromODataUri]int key)
         {
             var entity = await service.Entities.SingleOrDefaultAsync(e => e.Id == key);
 
