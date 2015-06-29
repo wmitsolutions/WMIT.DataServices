@@ -18,13 +18,13 @@ namespace WMIT.DataServices.Model
         public string CreatedBy { get; set; }
 
         [FieldAccess(IsSystemField = true)]
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         [FieldAccess(IsSystemField = true)]
         public string ModifiedBy { get; set; }
 
         [FieldAccess(IsSystemField = true)]
-        public DateTime? ModifiedAt { get; set; }
+        public DateTimeOffset? ModifiedAt { get; set; }
     }
 
     public interface IEntity
@@ -34,8 +34,8 @@ namespace WMIT.DataServices.Model
         bool IsDeleted { get; set; }
 
         string CreatedBy { get; set; }
-        DateTime CreatedAt { get; set; }
+        DateTimeOffset CreatedAt { get; set; }
         string ModifiedBy { get; set; }
-        DateTime? ModifiedAt { get; set; }
+        DateTimeOffset? ModifiedAt { get; set; }
     }
 }
