@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -16,12 +18,15 @@ namespace WMIT.DataServices.Common
     public static class ModelHelpers
     {
         // TODO: add documentation + tests
-        public static void AutoMapODataControllers(this HttpConfiguration configuration, string routeName = "odata", string routePrefix = "odata", Action<ODataConventionModelBuilder> builderConfig = null)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void AutoMapODataControllers(this HttpConfiguration configuration, string routeName = "odata", string routePrefix = "odata", Assembly assembly = null, Action<ODataConventionModelBuilder> builderConfig = null)
         {
             var builder = new ODataConventionModelBuilder();
 
+            var callingAssembly = assembly ?? Assembly.GetCallingAssembly();
+
             // Adds all ODataControllers end their entities to configuration
-            var oDataControllerTypes = Assembly.GetCallingAssembly()
+            var oDataControllerTypes = callingAssembly
                 .DefinedTypes
                 .Where(t => TypeHelpers.IsSubclassOfRawGeneric(typeof(ODataController<,>), t));
 
