@@ -159,7 +159,7 @@ namespace WMIT.DataServices.Common
         {
             var entityType = entityTypeConfig.ClrType;
 
-            foreach (var property in entityType.GetProperties().Where(p => p.GetCustomAttribute<ODataIgnoreAttribute>() != null))
+            foreach (var property in entityType.GetProperties().Where(p => p.GetCustomAttribute<ODataIgnoreAttribute>(false) != null))
             {
                 entityTypeConfig.RemoveProperty(property);
             }
