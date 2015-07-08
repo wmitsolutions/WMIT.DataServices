@@ -19,9 +19,9 @@ namespace WMIT.DataServices.Security
         {
             // Test entity for validity
             var entityType = context.Entry.Entity.GetType();
-            var entityAttributes = entityType.GetCustomAttributes(typeof(AccessAttribute), true);
+            var entityAttributes = entityType.GetCustomAttributes<AccessAttribute>(true);
 
-            foreach (var attr in entityAttributes.Cast<AccessAttribute>())
+            foreach (var attr in entityAttributes)
             {
                 if (attr.On != EntityOperation.All && !attr.On.HasFlag(context.Operation))
                     continue;
@@ -29,7 +29,7 @@ namespace WMIT.DataServices.Security
                 var valid = this.PrincipalHasAccess(context.User, attr);
 
                 if (!valid)
-                    HandleViolation((AccessAttribute)attr, context);
+                    HandleViolation(attr, context);
             }
 
             // Test modified properties for validity

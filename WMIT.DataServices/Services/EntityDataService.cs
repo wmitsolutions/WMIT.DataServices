@@ -60,11 +60,6 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Insert(TEntity item)
         {
-            //// TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
-            //// We should implement an Authorize handler for this behavior which makes use of 
-            //// SystemFields/FieldAccess
-            //item.SetCreationStatistics(this.Identity);
-
             DbContext.Set<TEntity>().Add(item);
             var entry = DbContext.Entry<TEntity>(item);
 
@@ -82,8 +77,6 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Update(TEntity item)
         {
-            //DbContext.Entry(item).Update().SetModificationStatistics(this.User);
-
             var entry = DbContext.Entry<TEntity>(item);
             entry.State = EntityState.Modified;
 
@@ -101,7 +94,7 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Delete(TEntity item)
         {
-            var entry = DbContext.Entry<TEntity>(item); //.Delete().SetModificationStatistics(this.User);
+            var entry = DbContext.Entry<TEntity>(item);
             entry.State = EntityState.Unchanged;
 
             var context = new EntityContext();
