@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using WMIT.DataServices.Model;
 using WMIT.DataServices.Common;
+using WMIT.DataServices.Security;
+using WMIT.DataServices.Visitors;
 
 namespace WMIT.DataServices.Services
 {
@@ -26,24 +28,30 @@ namespace WMIT.DataServices.Services
 
         public TDbContext DbContext { get; protected set; }
         public DbSet<TEntity> Set { get; protected set; }
-        public IIdentity Identity { get; protected set; }
+        public IPrincipal User { get; protected set; }
 
-        public EntityDataService(TDbContext dbContext, IIdentity identity)
+        public List<IEntityVisitor> Visitors { get; set; }
+
+        public EntityDataService(TDbContext dbContext, IPrincipal user)
         {
-            Initialize(dbContext, identity);
+            Initialize(dbContext, user);
         }
 
-        public EntityDataService(IIdentity identity)
+        public EntityDataService(IPrincipal user)
         {
-            Initialize(null, identity);
+            Initialize(null, user);
         }
 
-        protected virtual void Initialize(TDbContext dbContext, IIdentity identity)
+        protected virtual void Initialize(TDbContext dbContext, IPrincipal user)
         {
             this.DbContext = dbContext ?? new TDbContext();
             this.Set = this.DbContext.Set<TEntity>();
 
-            this.Identity = identity;
+            this.User = user;
+
+            this.Visitors = new List<IEntityVisitor>();
+            this.Visitors.Add(new AccessVisitor());
+            this.Visitors.Add(new AutoValueVisitor());
         }
 
         #endregion
@@ -52,11 +60,21 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Insert(TEntity item)
         {
-            // TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
-            // We should implement an Authorize handler for this behavior which makes use of 
-            // SystemFields/FieldAccess
-            item.SetCreationStatistics(this.Identity);
+            //// TODO: Fields like ModifiedAt/IsDeleted ... are resettet in this method.
+            //// We should implement an Authorize handler for this behavior which makes use of 
+            //// SystemFields/FieldAccess
+            //item.SetCreationStatistics(this.Identity);
+
             DbContext.Set<TEntity>().Add(item);
+            var entry = DbContext.Entry<TEntity>(item);
+
+            var context = new EntityContext();
+            context.Entry = entry;
+            context.User = this.User;
+            context.Operation = EntityOperation.Insert;
+
+            foreach (var visitor in this.Visitors)
+                visitor.Visit(context);
 
             await DbContext.SaveChangesAsync();
             DbContext.Entry(item).State = EntityState.Detached;
@@ -64,7 +82,18 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Update(TEntity item)
         {
-            DbContext.Entry(item).Update().SetModificationStatistics(this.Identity);
+            //DbContext.Entry(item).Update().SetModificationStatistics(this.User);
+
+            var entry = DbContext.Entry<TEntity>(item);
+            entry.State = EntityState.Modified;
+
+            var context = new EntityContext();
+            context.Entry = entry;
+            context.User = this.User;
+            context.Operation = EntityOperation.Update;
+
+            foreach (var visitor in this.Visitors)
+                visitor.Visit(context);
 
             await DbContext.SaveChangesAsync();
             DbContext.Entry(item).State = EntityState.Detached;
@@ -72,7 +101,19 @@ namespace WMIT.DataServices.Services
 
         public virtual async Task Delete(TEntity item)
         {
-            DbContext.Entry(item).Delete().SetModificationStatistics(this.Identity);
+            var entry = DbContext.Entry<TEntity>(item); //.Delete().SetModificationStatistics(this.User);
+            entry.State = EntityState.Unchanged;
+
+            var context = new EntityContext();
+            context.Entry = entry;
+            context.User = this.User;
+            context.Operation = EntityOperation.Delete;
+
+            foreach (var visitor in this.Visitors)
+                visitor.Visit(context);
+
+            item.IsDeleted = true;
+            entry.Property(p => p.IsDeleted).IsModified = true;
 
             await DbContext.SaveChangesAsync();
             DbContext.Entry(item).State = EntityState.Detached;

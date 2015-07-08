@@ -24,7 +24,7 @@ namespace WMIT.DataServices.Tests.Fixtures
             var db = TestDB.Create();
 
             var user = new User("user");
-            var service = new EntityDataService<TestDB, Contact>(db, user.Identity);
+            var service = new EntityDataService<TestDB, Contact>(db, user);
             var ctrl = new ContactsRESTController(service);
 
             ctrl.Configuration = new HttpConfiguration();
@@ -48,7 +48,7 @@ namespace WMIT.DataServices.Tests.Fixtures
             var db = TestDB.Create();
 
             var user = new User("user");
-            var service = new EntityDataService<TestDB, Contact>(db, user.Identity);
+            var service = new EntityDataService<TestDB, Contact>(db, user);
             var ctrl = new ContactsODataController(service);
 
             // We need the empty configuration for the Validate() method call

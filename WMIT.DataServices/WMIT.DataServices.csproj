@@ -77,8 +77,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoValueVisitorStrategies\CurrentUsernameStrategy.cs" />
+    <Compile Include="AutoValueVisitorStrategies\DateTimeOffsetNowStrategy.cs" />
     <Compile Include="Common\Attributes\ODataIgnoreAttribute.cs" />
-    <Compile Include="Common\ControllerHelpers.cs" />
     <Compile Include="Common\EntityContext.cs" />
     <Compile Include="Common\ModelHelpers.cs" />
     <Compile Include="Common\Attributes\ODataProcedureAttribute.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Services\IDataService.cs" />
     <Compile Include="Security\AccessVisitor.cs" />
     <Compile Include="Common\IEntityVisitor.cs" />
+    <Compile Include="Visitors\AutoValueVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

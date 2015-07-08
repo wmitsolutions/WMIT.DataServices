@@ -30,7 +30,7 @@ namespace WMIT.DataServices.Controllers
 
         public RESTController()
         {
-            this.service = new EntityDataService<TDbContext, TEntity>(this.User.Identity);
+            this.service = new EntityDataService<TDbContext, TEntity>(this.User);
         }
         
         protected virtual async Task<bool> EntityExists(int id)

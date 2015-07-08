@@ -9,8 +9,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using WMIT.DataServices.Common;
 using WMIT.DataServices.Model;
 using WMIT.DataServices.Security;
+using WMIT.DataServices.Tests.Visitors;
+using WMIT.DataServices.Visitors;
 
 namespace WMIT.DataServices.Tests
 {
@@ -33,15 +36,24 @@ namespace WMIT.DataServices.Tests
         public Contact Contact { get; set; }
     }
 
+    class AutoValueTestEntity : Entity
+    {
+        [AutoValue(On = EntityOperation.Insert, Strategy = typeof(OneStrategy))]
+        public int AutoOne { get; set; }
+
+        [AutoValue(On = EntityOperation.Update, Strategy = typeof(TwoStringStrategy))]
+        public string AutoTwo { get; set; }
+    }
+
     class AccessTestEntity : Entity
     {
         [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public string Internal_Throw { get; set; }
 
-        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Ignore)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.IgnoreUserInput)]
         public string Internal_Ignore { get; set; }
 
-        [Access(Users="admin1,admin2", ViolationBehavior = ViolationBehavior.Throw)]
+        [Access(Users = "admin1,admin2", ViolationBehavior = ViolationBehavior.Throw)]
         public string RestrictedUsers_Throw { get; set; }
 
         [Access(Roles = "admin", ViolationBehavior = ViolationBehavior.Throw)]
@@ -53,6 +65,7 @@ namespace WMIT.DataServices.Tests
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AccessTestEntity> AccessTestEntities { get; set; }
+        public DbSet<AutoValueTestEntity> AutoValueTestEntities { get; set; }
 
         public TestDB()
         {

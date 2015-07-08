@@ -15,26 +15,18 @@ namespace WMIT.DataServices.Security
 {
     public class AccessVisitor : IEntityVisitor
     {
-        public IPrincipal Principal { get; set; }
-
-        public AccessVisitor(IPrincipal principal)
-        {
-            this.Principal = principal;
-        }
-
-        public AccessVisitor()
-        {
-        }
-
         public virtual void Visit(EntityContext context)
         {
             // Test entity for validity
             var entityType = context.Entry.Entity.GetType();
             var entityAttributes = entityType.GetCustomAttributes(typeof(AccessAttribute), true);
 
-            foreach (var attr in entityAttributes)
+            foreach (var attr in entityAttributes.Cast<AccessAttribute>())
             {
-                var valid = this.PrincipalHasAccess(context.User, (AccessAttribute)attr);
+                if (attr.On != EntityOperation.All && !attr.On.HasFlag(context.Operation))
+                    continue;
+
+                var valid = this.PrincipalHasAccess(context.User, attr);
 
                 if (!valid)
                     HandleViolation((AccessAttribute)attr, context);
@@ -42,7 +34,8 @@ namespace WMIT.DataServices.Security
 
             // Test modified properties for validity
             var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            var modifiedProperties = properties.Where(p => context.Entry.Property(p.Name).IsModified).ToList();
+            var modifiedProperties = properties.Where(p => context.Entry.Member(p.Name) is DbPropertyEntry
+                && (context.Entry.Property(p.Name).IsModified || context.Entry.State == EntityState.Added)).ToList();
 
             foreach (var property in modifiedProperties)
             {
@@ -50,6 +43,9 @@ namespace WMIT.DataServices.Security
 
                 foreach (var attr in propertyAttributes)
                 {
+                    if (attr.On != EntityOperation.All && !attr.On.HasFlag(context.Operation))
+                        continue;
+
                     var valid = this.PrincipalHasAccess(context.User, attr);
 
                     if (!valid)
@@ -87,7 +83,7 @@ namespace WMIT.DataServices.Security
 
         public virtual void HandleViolation(AccessAttribute attr, EntityContext context, PropertyInfo property = null)
         {
-            if (attr.ViolationBehavior == ViolationBehavior.Ignore)
+            if (attr.ViolationBehavior == ViolationBehavior.IgnoreUserInput)
             {
                 // Ignore changes in violation, set states to unchanged/not modified
 

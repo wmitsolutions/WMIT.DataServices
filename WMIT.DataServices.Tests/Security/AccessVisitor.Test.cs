@@ -26,13 +26,13 @@ namespace WMIT.DataServices.Tests.Security
             var entity = db.AccessTestEntities.Attach(new AccessTestEntity());
             var entry = db.Entry(entity);
 
-            var ctx = new EntityContext() { Entry = entry, User = user };
+            var ctx = new EntityContext() { Entry = entry, User = user, Operation = EntityOperation.Insert };
 
             // Access violation
             entry.Property(e => e.Internal_Throw).IsModified = true;
 
             // Act
-            var visitor = new AccessVisitor(user);
+            var visitor = new AccessVisitor();
             visitor.Visit(ctx);
         }
 
@@ -47,13 +47,13 @@ namespace WMIT.DataServices.Tests.Security
             var entity = db.AccessTestEntities.Attach(new AccessTestEntity());
             var entry = db.Entry(entity);
 
-            var ctx = new EntityContext() { Entry = entry, User = user };
+            var ctx = new EntityContext() { Entry = entry, User = user, Operation = EntityOperation.Insert };
 
             // Access violation
             entry.Property(e => e.RestrictedUsers_Throw).IsModified = true;
 
             // Act
-            var visitor = new AccessVisitor(user);
+            var visitor = new AccessVisitor();
             visitor.Visit(ctx);
         }
       
@@ -68,13 +68,13 @@ namespace WMIT.DataServices.Tests.Security
             var entity = db.AccessTestEntities.Attach(new AccessTestEntity());
             var entry = db.Entry(entity);
 
-            var ctx = new EntityContext() { Entry = entry, User = user };
+            var ctx = new EntityContext() { Entry = entry, User = user, Operation = EntityOperation.Insert };
 
             // Access violation
             entry.Property(e => e.RestrictedRoles_Throw).IsModified = true;
 
             // Act
-            var visitor = new AccessVisitor(user);
+            var visitor = new AccessVisitor();
             visitor.Visit(ctx);
         }
 
@@ -88,13 +88,13 @@ namespace WMIT.DataServices.Tests.Security
             var entity = db.AccessTestEntities.Attach(new AccessTestEntity());
             var entry = db.Entry(entity);
 
-            var ctx = new EntityContext() { Entry = entry, User = user };
+            var ctx = new EntityContext() { Entry = entry, User = user, Operation = EntityOperation.Insert };
 
             // Access violation
             entry.Property(e => e.Internal_Ignore).IsModified = true;
 
             // Act
-            var visitor = new AccessVisitor(user);
+            var visitor = new AccessVisitor();
             visitor.Visit(ctx);
 
             // Assert
@@ -112,14 +112,14 @@ namespace WMIT.DataServices.Tests.Security
             var entity = db.AccessTestEntities.Attach(new AccessTestEntity());
             var entry = db.Entry(entity);
 
-            var ctx = new EntityContext() { Entry = entry, User = user };
+            var ctx = new EntityContext() { Entry = entry, User = user, Operation = EntityOperation.Insert };
 
             // Access violation
             entry.Property(e => e.RestrictedUsers_Throw).IsModified = true;
             entry.Property(e => e.RestrictedRoles_Throw).IsModified = true;
 
             // Act
-            var visitor = new AccessVisitor(user);
+            var visitor = new AccessVisitor();
             visitor.Visit(ctx);
 
             // Assert
