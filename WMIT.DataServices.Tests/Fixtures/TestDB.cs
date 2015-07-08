@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using WMIT.DataServices.Model;
+using WMIT.DataServices.Security;
 
 namespace WMIT.DataServices.Tests
 {
@@ -32,17 +33,34 @@ namespace WMIT.DataServices.Tests
         public Contact Contact { get; set; }
     }
 
+    class AccessTestEntity : Entity
+    {
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
+        public string Internal_Throw { get; set; }
+
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Ignore)]
+        public string Internal_Ignore { get; set; }
+
+        [Access(Users="admin1,admin2", ViolationBehavior = ViolationBehavior.Throw)]
+        public string RestrictedUsers_Throw { get; set; }
+
+        [Access(Roles = "admin", ViolationBehavior = ViolationBehavior.Throw)]
+        public string RestrictedRoles_Throw { get; set; }
+    }
+
     class TestDB : DbContext
     {
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<AccessTestEntity> AccessTestEntities { get; set; }
 
         public TestDB()
         {
         }
 
-        public TestDB(DbConnection connection) : base(connection, true)
-        { 
+        public TestDB(DbConnection connection)
+            : base(connection, true)
+        {
         }
 
         static CachingDataLoader cachingDataLoader = null;

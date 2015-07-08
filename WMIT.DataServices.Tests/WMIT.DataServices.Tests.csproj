@@ -105,6 +105,7 @@
     <Compile Include="Fixtures\TestDB.cs" />
     <Compile Include="Fixtures\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\AccessVisitor.Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMIT.DataServices\WMIT.DataServices.csproj">
@@ -118,9 +119,7 @@
     <EmbeddedResource Include="Fixtures\Data\Addresses.csv" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -11,19 +11,19 @@ namespace WMIT.DataServices.Model
     {
         public int Id { get; set; }
 
-        [FieldAccess(IsSystemField=true)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public bool IsDeleted { get; set; }
 
-        [FieldAccess(IsSystemField = true)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public string CreatedBy { get; set; }
 
-        [FieldAccess(IsSystemField = true)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [FieldAccess(IsSystemField = true)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public string ModifiedBy { get; set; }
 
-        [FieldAccess(IsSystemField = true)]
+        [Access(InternalUsage = true, ViolationBehavior = ViolationBehavior.Throw)]
         public DateTimeOffset? ModifiedAt { get; set; }
     }
 

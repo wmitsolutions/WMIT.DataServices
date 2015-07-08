@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace WMIT.DataServices.Security
 {
-    public class FieldAccessAttribute : Attribute
+    public class DataServicesAccessViolationException : Exception
     {
-        public bool IsSystemField { get; set; }
     }
 }

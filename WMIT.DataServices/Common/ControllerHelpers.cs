@@ -20,14 +20,14 @@ namespace WMIT.DataServices.Common
 
             foreach (var property in entry.Entity.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                var fieldAccess = property.GetCustomAttribute<FieldAccessAttribute>();
+                var fieldAccess = property.GetCustomAttribute<AccessAttribute>();
 
                 if (fieldAccess == null)
                     continue;
 
                 // If the field is system exclusive (IsDeleted, CreatedBy, ModifiedAt...)
                 // unset modification to get no update if the user passed a value
-                if (fieldAccess.IsSystemField)
+                if (fieldAccess.InternalUsage)
                 {
                     entry.Property(property.Name).IsModified = false;
                 }

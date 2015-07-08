@@ -25,6 +25,8 @@ namespace WMIT.DataServices.Tests.Fixtures
         public User(string name)
         {
             this.Roles = new List<string>();
+            this.Roles.Add("user");
+
             this._Identity = new Identity()
             {
                 AuthenticationType = "custom",

@@ -62,6 +62,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>
@@ -78,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Common\Attributes\ODataIgnoreAttribute.cs" />
     <Compile Include="Common\ControllerHelpers.cs" />
+    <Compile Include="Common\EntityContext.cs" />
     <Compile Include="Common\ModelHelpers.cs" />
     <Compile Include="Common\Attributes\ODataProcedureAttribute.cs" />
     <Compile Include="Common\Attributes\ODataProcedureParameterAttribute.cs" />
@@ -86,10 +88,12 @@
     <Compile Include="Model\Entity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\RESTController.cs" />
-    <Compile Include="Security\EntityAccessAttribute.cs" />
-    <Compile Include="Security\FieldAccessAttribute.cs" />
+    <Compile Include="Security\AccessAttribute.cs" />
+    <Compile Include="Security\DataServicesAccessViolationException.cs" />
     <Compile Include="Services\EntityDataService.cs" />
     <Compile Include="Services\IDataService.cs" />
+    <Compile Include="Security\AccessVisitor.cs" />
+    <Compile Include="Common\IEntityVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
