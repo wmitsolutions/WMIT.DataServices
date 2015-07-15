@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WMIT.DataServices.Common.Attributes
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple=true)]
     public class ODataProcedureParameterAttribute : Attribute
     {
         public Type Type { get; set; }
