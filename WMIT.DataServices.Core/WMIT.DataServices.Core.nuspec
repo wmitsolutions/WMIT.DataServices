@@ -11,8 +11,5 @@
     <description>$description$</description>
     <copyright>Copyright 2015 WMIT Solutions GmbH</copyright>
     <tags>restful services odata</tags>
-    <dependencies>
-        <dependency id="WMIT.DataServices.Core" version="0.0.1" />
-    </dependencies>
   </metadata>
 </package>

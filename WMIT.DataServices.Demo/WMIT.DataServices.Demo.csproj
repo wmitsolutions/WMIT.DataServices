@@ -133,6 +133,10 @@
     <Compile Include="Migrations\201505051524438_AddressTable.Designer.cs">
       <DependentUpon>201505051524438_AddressTable.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507171224513_Test.cs" />
+    <Compile Include="Migrations\201507171224513_Test.Designer.cs">
+      <DependentUpon>201507171224513_Test.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AddressBookDB.cs" />
     <Compile Include="Models\Contact.cs" />
@@ -162,6 +166,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201505051524438_AddressTable.resx">
       <DependentUpon>201505051524438_AddressTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507171224513_Test.resx">
+      <DependentUpon>201507171224513_Test.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

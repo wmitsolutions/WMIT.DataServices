@@ -34,16 +34,4 @@ namespace WMIT.DataServices.Model
         [AutoValue(On = EntityOperation.Update, Strategy = typeof(DateTimeOffsetNowStrategy))]
         public DateTimeOffset? ModifiedAt { get; set; }
     }
-
-    public interface IEntity
-    {
-        int Id { get; }
-
-        bool IsDeleted { get; set; }
-
-        string CreatedBy { get; set; }
-        DateTimeOffset CreatedAt { get; set; }
-        string ModifiedBy { get; set; }
-        DateTimeOffset? ModifiedAt { get; set; }
-    }
 }
