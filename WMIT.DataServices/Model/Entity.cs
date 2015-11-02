@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WMIT.DataServices.AutoValueVisitorStrategies;
 using WMIT.DataServices.Common;
+using WMIT.DataServices.Core;
 using WMIT.DataServices.Security;
 using WMIT.DataServices.Visitors;
 

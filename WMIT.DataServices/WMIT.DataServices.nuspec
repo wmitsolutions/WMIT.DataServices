@@ -12,7 +12,7 @@
     <copyright>Copyright 2015 WMIT Solutions GmbH</copyright>
     <tags>restful services odata</tags>
     <dependencies>
-        <dependency id="WMIT.DataServices.Core" version="0.0.1" />
+        <dependency id="WMIT.DataServices.Core" version="0.0.2" />
     </dependencies>
   </metadata>
 </package>

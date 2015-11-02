@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using WMIT.DataServices.Common;
+using WMIT.DataServices.Core;
 using WMIT.DataServices.Model;
 using WMIT.DataServices.Services;
 

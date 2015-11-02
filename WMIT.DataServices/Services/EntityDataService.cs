@@ -9,6 +9,7 @@ using WMIT.DataServices.Model;
 using WMIT.DataServices.Common;
 using WMIT.DataServices.Security;
 using WMIT.DataServices.Visitors;
+using WMIT.DataServices.Core;
 
 namespace WMIT.DataServices.Services
 {

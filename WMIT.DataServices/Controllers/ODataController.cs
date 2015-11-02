@@ -13,6 +13,7 @@ using System.Runtime.ExceptionServices;
 using System.Data.Entity.Infrastructure;
 using System.Net;
 using WMIT.DataServices.Services;
+using WMIT.DataServices.Core;
 
 namespace WMIT.DataServices.Controllers
 {
