@@ -85,6 +85,7 @@
     <Compile Include="AutoValueVisitorStrategies\CurrentUsernameStrategy.cs" />
     <Compile Include="AutoValueVisitorStrategies\DateTimeOffsetNowStrategy.cs" />
     <Compile Include="Common\Attributes\ODataIgnoreAttribute.cs" />
+    <Compile Include="Common\DIContainer.cs" />
     <Compile Include="Common\EntityContext.cs" />
     <Compile Include="Common\ModelHelpers.cs" />
     <Compile Include="Common\Attributes\ODataProcedureAttribute.cs" />

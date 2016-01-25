@@ -23,5 +23,7 @@ namespace WMIT.DataServices.Common
         public EntityOperation Operation { get; set; }
         public DbEntityEntry Entry { get; set; }
         public IPrincipal User { get; set; }
+
+        public static DIContainer DI { get; set; } = new DIContainer();
     }
 }
