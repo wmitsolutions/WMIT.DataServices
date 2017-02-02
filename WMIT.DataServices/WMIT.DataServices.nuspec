@@ -9,10 +9,10 @@
     <projectUrl>https://github.com/wmitsolutions/WMIT.DataServices</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <copyright>Copyright 2015 WMIT Solutions GmbH</copyright>
+    <copyright>Copyright 2016 WMIT Solutions GmbH</copyright>
     <tags>restful services odata</tags>
     <dependencies>
-        <dependency id="WMIT.DataServices.Core" version="0.0.2" />
+        <dependency id="WMIT.DataServices.Core" version="0.0.3" />
     </dependencies>
   </metadata>
 </package>
