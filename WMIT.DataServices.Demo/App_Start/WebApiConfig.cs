@@ -44,7 +44,7 @@ namespace WMIT.DataServices.Demo
             config.AutoMapODataControllers(builderConfig: (builder) =>
             {
                 //builder.EntityType<Entity>().Abstract();
-                var conf = builder.Procedures.Single(p => p.Name == "SetTags");
+                var conf = builder.Operations.Single(p => p.Name == "SetTags");
                 ((ActionConfiguration)conf).ReturnsFromEntitySet<Contact>("Contacts");
             });
         }

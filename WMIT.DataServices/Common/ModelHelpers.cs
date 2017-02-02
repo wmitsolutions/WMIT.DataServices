@@ -61,10 +61,10 @@ namespace WMIT.DataServices.Common
             foreach (var method in methods)
             {
                 var attr = method.GetCustomAttribute<ODataProcedureAttribute>();
-                ProcedureConfiguration procedure;
+                OperationConfiguration procedure;
 
                 // TODO: Extract into separate class if possible
-                Func<string, IEdmTypeConfiguration, ProcedureConfiguration> setBindingParameterFunc;
+                Func<string, IEdmTypeConfiguration, OperationConfiguration> setBindingParameterFunc;
 
                 string previousNamespace = builder.Namespace;
                 builder.Namespace = attr.Namespace;
